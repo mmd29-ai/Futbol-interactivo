@@ -2,282 +2,525 @@
 <html lang="es">
 <head>
 <meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>Fútbol Interactivo</title>
 <style>
-* { box-sizing: border-box; }
+:root {
+  --bg:#0b1118; --panel:#141f2b; --panel2:#1c2a37;
+  --text:#f3f7fa; --muted:#9baebe; --green:#4de28b;
+  --yellow:#f4d35e; --red:#f15b64; --border:#2a3b49;
+}
+* { box-sizing:border-box; }
 body {
-  margin: 0;
-  padding: 16px;
-  background: #101820;
-  color: white;
-  font-family: Arial, sans-serif;
-  text-align: center;
+  margin:0; background:var(--bg); color:var(--text);
+  font-family:Arial,Helvetica,sans-serif;
 }
-h1 { color: #53e88b; }
-.marcador {
-  max-width: 700px;
-  margin: 20px auto;
-  padding: 16px;
-  background: #243440;
-  border-radius: 12px;
+header {
+  display:flex; align-items:center; justify-content:space-between;
+  gap:16px; padding:18px 5%; border-bottom:1px solid var(--border);
+  background:#101923;
 }
-.resultado { font-size: 34px; font-weight: bold; }
-.campo {
-  position: relative;
-  width: 100%;
-  max-width: 700px;
-  aspect-ratio: 3 / 2;
-  margin: 20px auto;
-  border: 3px solid white;
-  overflow: hidden;
-  background: repeating-linear-gradient(
-    90deg, #168447 0%, #168447 12.5%,
-    #1c9451 12.5%, #1c9451 25%
+.logo { font-size:20px; font-weight:800; }
+.logo span { color:var(--green); }
+.tag { color:var(--muted); font-size:12px; }
+main { max-width:1400px; margin:auto; padding:22px; }
+h2,h3,p { margin-top:0; }
+h2 { font-size:19px; }
+h3 { font-size:15px; }
+.muted { color:var(--muted); font-size:13px; }
+.panel {
+  background:var(--panel); border:1px solid var(--border);
+  border-radius:14px; padding:18px; min-width:0;
+}
+.scoreboard {
+  display:grid; grid-template-columns:1fr auto 1fr;
+  align-items:center; gap:15px; margin-bottom:20px;
+}
+.team { display:flex; align-items:center; gap:12px; }
+.team:last-child { justify-content:flex-end; text-align:right; }
+.crest {
+  width:48px; height:48px; display:grid; place-items:center;
+  border-radius:12px; background:var(--panel2); font-size:23px;
+}
+.score { text-align:center; min-width:125px; }
+.score strong { font-size:34px; letter-spacing:3px; }
+.score small { display:block; color:var(--green); margin-top:5px; }
+.dashboard {
+  display:grid; grid-template-columns:minmax(0,1.65fr) minmax(280px,1fr);
+  gap:18px; align-items:start;
+}
+.pitch {
+  position:relative; overflow:hidden; width:100%; aspect-ratio:0.88;
+  max-height:760px; min-height:450px; border:3px solid #e1f4e5;
+  border-radius:8px;
+  background:repeating-linear-gradient(
+    0deg,#17683d 0px,#17683d 65px,#1c7445 65px,#1c7445 130px
   );
 }
-.centro {
-  position: absolute;
-  top: 0; bottom: 0; left: 50%;
-  border-left: 2px solid white;
+.pitch:before {
+  content:""; position:absolute; inset:0; border:2px solid #e1f4e5;
+  pointer-events:none;
 }
-.circulo {
-  position: absolute;
-  width: 22%; aspect-ratio: 1;
-  left: 50%; top: 50%;
-  transform: translate(-50%,-50%);
-  border: 2px solid white;
-  border-radius: 50%;
+.half-line {
+  position:absolute; top:50%; left:0; width:100%;
+  border-top:2px solid #e1f4e5;
 }
-.area {
-  position: absolute;
-  width: 16%; height: 45%;
-  top: 27.5%;
-  border: 2px solid white;
+.center-circle {
+  position:absolute; width:29%; aspect-ratio:1; border:2px solid #e1f4e5;
+  border-radius:50%; left:35.5%; top:35.5%;
 }
-.izquierda { left: 0; border-left: 0; }
-.derecha { right: 0; border-right: 0; }
-.jugador {
-  position: absolute;
-  transform: translate(-50%,-50%);
-  width: 44px;
-  padding: 0;
-  border: 0;
-  background: transparent;
-  color: white;
-  cursor: pointer;
-  z-index: 2;
+.box-top,.box-bottom {
+  position:absolute; left:24%; width:52%; height:13%;
+  border:2px solid #e1f4e5;
 }
-.camiseta {
-  display: grid;
-  place-items: center;
-  width: 27px; height: 27px;
-  margin: auto;
-  border: 2px solid white;
-  border-radius: 7px;
-  font-size: 11px;
-  font-weight: bold;
+.box-top { top:0; border-top:0; }
+.box-bottom { bottom:0; border-bottom:0; }
+.goal-top,.goal-bottom {
+  position:absolute; left:39%; width:22%; height:3%;
+  border:2px solid #e1f4e5;
 }
-.local .camiseta { background: #e63946; }
-.visitante .camiseta {
-  background: #f4d35e;
-  color: #17202a;
-  border-color: #17202a;
+.goal-top { top:0; border-top:0; }
+.goal-bottom { bottom:0; border-bottom:0; }
+.pitch-label {
+  position:absolute; left:50%; transform:translateX(-50%);
+  color:#ffffffa0; font-size:11px; letter-spacing:2px;
 }
-.nombre {
-  display: block;
-  font-size: 10px;
-  margin-top: 3px;
-  font-weight: bold;
-  text-shadow: 1px 1px 3px black;
+.pitch-label.top { top:15%; }
+.pitch-label.bottom { bottom:15%; }
+.player {
+  position:absolute; transform:translate(-50%,-50%);
+  width:53px; padding:0; border:0; background:transparent;
+  color:white; cursor:pointer; z-index:2;
+  display:flex; align-items:center; flex-direction:column; gap:3px;
 }
-.balon {
-  position: absolute;
-  left: 50%; top: 50%;
-  transform: translate(-50%,-50%);
-  font-size: 25px;
-  z-index: 3;
-  transition: left .4s, top .4s;
+.shirt {
+  width:29px; height:29px; display:grid; place-items:center;
+  border-radius:8px 8px 5px 5px; font-size:12px; font-weight:bold;
+  background:#e8edf0; color:#17212b; border:2px solid white;
+  box-shadow:0 2px 5px #0007;
 }
-.panel {
-  max-width: 700px;
-  margin: 16px auto;
-  padding: 16px;
-  background: #243440;
-  border-radius: 12px;
-  text-align: left;
+.player.away .shirt {
+  background:var(--yellow); border-color:#fff1a8; color:#222;
 }
-.accion {
-  margin: 5px;
-  padding: 10px 14px;
-  border: 0;
-  border-radius: 8px;
-  background: #53e88b;
-  font-weight: bold;
-  cursor: pointer;
+.player.selected .shirt {
+  outline:3px solid var(--green); outline-offset:2px;
+}
+.player-name {
+  background:#09150ddd; padding:3px 5px; border-radius:4px;
+  font-size:10px; white-space:nowrap; max-width:76px;
+  overflow:hidden; text-overflow:ellipsis;
+}
+.button-row { display:flex; flex-wrap:wrap; gap:8px; margin-top:14px; }
+button.action, select {
+  background:var(--panel2); color:var(--text);
+  border:1px solid var(--border); border-radius:8px;
+  padding:10px 12px; cursor:pointer; font-size:13px;
+}
+button.action:hover { border-color:var(--green); }
+button.primary { background:var(--green); color:#102219; font-weight:bold; }
+.stat-grid {
+  display:grid; grid-template-columns:repeat(2,minmax(0,1fr)); gap:10px;
+}
+.stat-card { background:var(--panel2); border-radius:9px; padding:13px; }
+.stat-card span { display:block; color:var(--muted); font-size:12px; }
+.stat-card strong { display:block; margin-top:7px; font-size:23px; }
+.section { margin-top:18px; }
+.bar-row { margin:15px 0; }
+.bar-label {
+  display:flex; justify-content:space-between; gap:8px;
+  font-size:13px; margin-bottom:7px;
+}
+.bar {
+  height:8px; background:#30414e; border-radius:8px; overflow:hidden;
+}
+.bar-fill { height:100%; background:var(--green); border-radius:8px; }
+.bar-fill.away { background:var(--yellow); }
+.player-card { min-height:190px; }
+.player-head { display:flex; align-items:center; gap:13px; margin-bottom:16px; }
+.big-shirt {
+  width:54px; height:54px; display:grid; place-items:center;
+  background:var(--green); color:#102219; border-radius:12px;
+  font-size:23px; font-weight:bold;
+}
+.player-head h2 { margin-bottom:5px; }
+.pill {
+  display:inline-block; font-size:11px; padding:5px 8px;
+  background:#263a35; color:var(--green); border-radius:20px;
+}
+.event {
+  display:flex; gap:10px; padding:11px 0;
+  border-bottom:1px solid var(--border); font-size:13px;
+}
+.event:last-child { border-bottom:0; }
+.event-time { color:var(--green); font-weight:bold; min-width:32px; }
+.tactics { line-height:1.6; font-size:13px; color:#d3dfe6; }
+footer { text-align:center; color:var(--muted); font-size:12px; padding:25px; }
+.notice {
+  border:1px solid #655a2e; background:#302b1b; color:#f6df92;
+  padding:12px; border-radius:10px; font-size:12px; margin-top:18px;
+}
+@media(max-width:850px) {
+  main { padding:12px; }
+  .dashboard { grid-template-columns:1fr; }
+  .pitch { min-height:420px; }
+  header { padding:15px; }
+}
+@media(max-width:460px) {
+  .team { flex-direction:column; align-items:flex-start; font-size:12px; }
+  .team:last-child { align-items:flex-end; }
+  .crest { width:38px; height:38px; font-size:18px; }
+  .score { min-width:85px; }
+  .score strong { font-size:26px; }
+  .player { width:43px; }
+  .shirt { width:25px; height:25px; }
+  .player-name { font-size:9px; max-width:62px; }
+  .pitch { min-height:390px; }
 }
 </style>
 </head>
 <body>
-<h1>⚽ Fútbol Interactivo</h1>
-<p>Prototipo de partido · Datos de ejemplo</p>
+<header>
+  <div class="logo">⚽ FÚTBOL<span> INTERACTIVO</span></div>
+  <div class="tag">CENTRO DE ANÁLISIS · DEMO</div>
+</header>
 
-<div class="marcador">
-  <div>REAL MADRID — FC BARCELONA</div>
-  <div class="resultado">1 - 1</div>
-  <div>Minuto 67'</div>
-</div>
+<main>
+  <section class="panel scoreboard">
+    <div class="team">
+      <div class="crest">⚪</div>
+      <div><strong>Real Madrid</strong><div class="muted">Equipo local</div></div>
+    </div>
+    <div class="score">
+      <strong id="marcador">2 - 1</strong>
+      <small id="reloj">78′ · SEGUNDA PARTE</small>
+    </div>
+    <div class="team">
+      <div>
+        <strong>FC Barcelona</strong>
+        <div class="muted">Equipo visitante</div>
+      </div>
+      <div class="crest">🔵</div>
+    </div>
+  </section>
 
-<div class="campo" id="campo">
-  <div class="centro"></div>
-  <div class="circulo"></div>
-  <div class="area izquierda"></div>
-  <div class="area derecha"></div>
-  <div class="balon" id="balon">⚽</div>
-</div>
-
-<div class="panel">
-  <h2>Jugador seleccionado</h2>
-  <div id="detalle">Pulsa sobre un jugador para ver sus datos.</div>
-</div>
-
-<div class="panel">
-  <h2>Estadísticas del partido</h2>
-  <p>Posesión: Real Madrid 52% — 48% Barcelona</p>
-  <p>Remates: Real Madrid 12 — 10 Barcelona</p>
-  <p>Pases: Real Madrid 420 — 398 Barcelona</p>
-</div>
-
-<div class="panel">
-  <h2>Acciones del partido</h2>
-  <button class="accion" onclick="moverBalon()">Mover balón</button>
-  <button class="accion" onclick="verEvento()">Ver último evento</button>
-  <p id="evento">Último evento: gol en el minuto 67'.</p>
-</div>
-
-<script>
-const jugadores = [
-  ["Courtois",1,5,50,"Portero",0,90,0,0,28,0,0,0,0],
-  ["Carvajal",2,20,18,"Defensa",0,85,0,2,52,46,1,0,6],
-  ["Rüdiger",22,20,39,"Defensa",0,90,1,0,65,61,0,1,8],
-  ["Nacho",6,20,61,"Defensa",0,45,0,0,32,29,1,0,4],
-  ["Mendy",23,20,82,"Defensa",0,78,0,1,41,37,2,0,5],
-  ["Valverde",15,35,28,"Centrocampista",0,90,1,2,58,53,1,0,9],
-  ["Kroos",8,35,50,"Centrocampista",0,82,0,1,76,71,0,0,8],
-  ["Bellingham",5,35,72,"Centrocampista",0,88,1,1,49,44,2,0,8],
-  ["Rodrygo",11,44,20,"Delantero",0,75,0,2,28,23,1,0,6],
-  ["Vinícius",7,44,80,"Delantero",0,90,1,1,31,25,2,0,9],
-  ["Joselu",14,44,50,"Delantero",0,30,0,0,9,7,1,0,6],
-  ["Ter Stegen",1,95,50,"Portero",1,90,0,0,35,32,0,0,7],
-  ["Cancelo",2,80,18,"Defensa",1,90,0,1,61,55,2,0,7],
-  ["Araujo",4,80,39,"Defensa",1,85,0,0,48,44,2,1,7],
-  ["Christensen",15,80,61,"Defensa",1,90,0,0,57,54,0,0,7],
-  ["Balde",3,80,82,"Defensa",1,70,0,1,39,34,1,0,6],
-  ["Gündogan",22,65,28,"Centrocampista",1,90,0,1,67,62,1,0,7],
-  ["De Jong",21,65,50,"Centrocampista",1,80,0,1,72,68,1,0,8],
-  ["Pedri",8,65,72,"Centrocampista",1,65,0,1,43,39,0,0,7],
-  ["Raphinha",11,56,20,"Delantero",1,75,1,2,30,24,2,0,8],
-  ["Ferran",7,56,80,"Delantero",1,60,0,1,19,15,1,0,6],
-  ["Lewandowski",9,56,50,"Delantero",1,90,1,0,25,20,2,0,8]
-];
-
-const campo = document.getElementById("campo");
-
-jugadores.forEach(j => {
-  const b = document.createElement("button");
-  b.className = "jugador " + (j[5] ? "visitante" : "local");
-  b.style.left = j[2] + "%";
-  b.style.top = j[3] + "%";
-  b.innerHTML =
-    '<span class="camiseta">' + j[1] + '</span>' +
-    '<span class="nombre">' + j[0] + '</span>';
-b.onclick = () => {
-  const equipo = j[5] ? "FC Barcelona" : "Real Madrid";
-
- const stats = {
-  minutos: j[6],
-  goles: j[7],
-  asistencias: j[8],
-  pases: j[9],
-  pasesAcertados: j[10],
-  faltas: j[11],
-  amarillas: j[12],
-  rojas: 0,
-  rating: j[13]
-};
-
-  document.getElementById("detalle").innerHTML = `
-    <div style="padding:16px;background:#172630;border-radius:12px">
-      <div style="display:flex;align-items:center;gap:14px">
-        <div style="background:${j[5] ? '#f4d35e' : '#e63946'};
-                    color:${j[5] ? '#17202a' : 'white'};
-                    padding:16px;border-radius:12px;font-size:28px;font-weight:bold">
-          ${j[1]}
+  <div class="dashboard">
+    <section>
+      <div class="panel">
+        <h2>Campo táctico</h2>
+        <p class="muted">Selecciona cualquier jugador para consultar su ficha.</p>
+        <div id="campo" class="pitch">
+          <div class="half-line"></div>
+          <div class="center-circle"></div>
+          <div class="box-top"></div><div class="box-bottom"></div>
+          <div class="goal-top"></div><div class="goal-bottom"></div>
+          <div class="pitch-label top">REAL MADRID</div>
+          <div class="pitch-label bottom">FC BARCELONA</div>
         </div>
-        <div>
-          <h2 style="margin:0 0 6px">${j[0]}</h2>
-          <div>${equipo}</div>
-          <div style="color:#53e88b;margin-top:5px">${j[4]}</div>
+        <div class="button-row">
+          <button class="action primary" id="eventoBtn">＋ Simular evento</button>
+          <button class="action" id="balonBtn">⚽ Mover balón</button>
+          <button class="action" id="formacionBtn">⇄ Cambiar formación</button>
+          <button class="action" id="reiniciarBtn">↺ Reiniciar demo</button>
         </div>
       </div>
 
-      <hr style="border-color:#42515c;margin:18px 0">
+      <div class="panel section">
+        <h2>Estadísticas del partido</h2>
+        <p class="muted">Comparativa ilustrativa de ambos equipos.</p>
+        <div id="estadisticasPartido"></div>
+      </div>
 
-<div style="display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:10px">
-  <div style="background:#243440;padding:12px;border-radius:8px">
-    <div style="color:#b8c5ce;font-size:13px">Goles</div>
-    <strong style="font-size:25px">${stats.goles}</strong>
-  </div>
-  <div style="background:#243440;padding:12px;border-radius:8px">
-    <div style="color:#b8c5ce;font-size:13px">Asistencias</div>
-    <strong style="font-size:25px">${stats.asistencias}</strong>
-  </div>
-  <div style="background:#243440;padding:12px;border-radius:8px">
-    <div style="color:#b8c5ce;font-size:13px">Minutos</div>
-    <strong style="font-size:25px">${stats.minutos}'</strong>
-  </div>
-  <div style="background:#243440;padding:12px;border-radius:8px">
-    <div style="color:#b8c5ce;font-size:13px">Valoración</div>
-    <strong style="font-size:25px">${stats.rating}</strong>
-  </div>
-  <div style="background:#243440;padding:12px;border-radius:8px">
-    <div style="color:#b8c5ce;font-size:13px">Pases acertados</div>
-    <strong style="font-size:25px">${stats.pasesAcertados}/${stats.pases}</strong>
-  </div>
-  <div style="background:#243440;padding:12px;border-radius:8px">
-    <div style="color:#b8c5ce;font-size:13px">Faltas</div>
-    <strong style="font-size:25px">${stats.faltas}</strong>
-  </div>
-  <div style="background:#243440;padding:12px;border-radius:8px">
-    <div style="color:#b8c5ce;font-size:13px">Tarjetas amarillas</div>
-    <strong style="font-size:25px">${stats.amarillas}</strong>
-  </div>
-  <div style="background:#243440;padding:12px;border-radius:8px">
-    <div style="color:#b8c5ce;font-size:13px">Tarjetas rojas</div>
-    <strong style="font-size:25px">${stats.rojas}</strong>
-  </div>
-</div>
+      <div class="panel section">
+        <h2>Eventos del partido</h2>
+        <div id="eventos"></div>
+      </div>
+    </section>
 
-      <p style="color:#b8c5ce;font-size:12px;margin-bottom:0">
-        Estadísticas ilustrativas; no son datos reales del jugador.
-      </p>
+    <aside>
+      <div class="panel player-card" id="detalle">
+        <h2>Ficha del jugador</h2>
+        <p class="muted">Pulsa un jugador del campo para ver sus estadísticas individuales.</p>
+      </div>
+
+      <div class="panel section">
+        <h2>Análisis táctico</h2>
+        <div id="analisis" class="tactics"></div>
+      </div>
+
+      <div class="panel section">
+        <h2>Datos rápidos</h2>
+        <div class="stat-grid">
+          <div class="stat-card"><span>Formación local</span><strong id="formLocal">4-3-3</strong></div>
+          <div class="stat-card"><span>Formación visitante</span><strong>4-3-3</strong></div>
+          <div class="stat-card"><span>Tarjetas amarillas</span><strong id="totalAmarillas">3</strong></div>
+          <div class="stat-card"><span>Eventos registrados</span><strong id="totalEventos">3</strong></div>
+        </div>
+      </div>
+    </aside>
+  </div>
+
+  <div class="notice">
+    ⚠️ Versión de demostración: el marcador, las plantillas y las estadísticas son datos ficticios. No representan un partido real ni se actualizan desde LaLiga.
+  </div>
+</main>
+
+<footer>Fútbol Interactivo · Proyecto independiente de demostración</footer>
+
+<script>
+const jugadoresIniciales = [
+  ["Courtois",1,8,23,"Portero",0,78,0,0,25,22,0,0,7.2],
+  ["Carvajal",2,23,14,"Defensa",0,78,0,1,43,38,1,1,7.1],
+  ["Rüdiger",22,39,11,"Defensa",0,78,0,0,54,51,1,0,7.5],
+  ["Nacho",6,61,11,"Defensa",0,78,0,0,47,44,1,0,6.9],
+  ["Mendy",23,77,14,"Defensa",0,78,0,0,36,32,2,0,6.8],
+  ["Valverde",15,28,34,"Centrocampista",0,78,0,1,49,44,1,0,7.4],
+  ["Kroos",8,50,29,"Centrocampista",0,78,0,1,67,63,0,0,7.8],
+  ["Bellingham",5,72,34,"Centrocampista",0,78,1,0,38,34,1,0,8.2],
+  ["Rodrygo",11,20,44,"Delantero",0,78,0,0,22,18,1,0,6.9],
+  ["Vinícius",7,80,44,"Delantero",0,78,1,0,27,23,2,0,8.1],
+  ["Joselu",14,50,43,"Delantero",0,30,0,0,10,7,1,0,6.7],
+
+  ["Ter Stegen",1,92,77,"Portero",1,78,0,0,29,26,0,0,7.1],
+  ["Cancelo",2,77,86,"Defensa",1,78,0,1,48,43,1,0,7.2],
+  ["Araujo",4,61,89,"Defensa",1,78,0,0,45,41,2,1,6.8],
+  ["Christensen",15,39,89,"Defensa",1,78,0,0,49,46,0,0,7.0],
+  ["Balde",3,23,86,"Defensa",1,78,0,0,33,29,1,0,6.9],
+  ["Gündogan",22,72,66,"Centrocampista",1,78,0,1,57,52,1,0,7.3],
+  ["De Jong",21,50,71,"Centrocampista",1,78,0,0,61,58,1,0,7.6],
+  ["Pedri",8,28,66,"Centrocampista",1,65,0,0,39,36,0,0,7.0],
+  ["Raphinha",11,80,56,"Delantero",1,78,1,0,25,20,2,0,7.8],
+  ["Ferran",7,20,56,"Delantero",1,60,0,0,18,14,1,0,6.6],
+  ["Lewandowski",9,50,57,"Delantero",1,78,0,0,23,18,2,0,6.9]
+];
+
+let jugadores = [];
+let eventos = [];
+let formacionAlternativa = false;
+let seleccionado = null;
+let reloj = 78;
+let golesLocal = 2;
+let golesVisitante = 1;
+
+const campo = document.getElementById("campo");
+const $ = id => document.getElementById(id);
+
+function reiniciarDatos() {
+  jugadores = jugadoresIniciales.map(j => [...j]);
+  eventos = [
+    {minuto:"12′", texto:"⚽ Gol de Vinícius", equipo:0},
+    {minuto:"36′", texto:"⚽ Gol de Raphinha", equipo:1},
+    {minuto:"64′", texto:"⚽ Gol de Bellingham", equipo:0}
+  ];
+  formacionAlternativa = false;
+  seleccionado = null;
+  reloj = 78;
+  golesLocal = 2;
+  golesVisitante = 1;
+  dibujarTodo();
+}
+
+function dibujarJugadores() {
+  campo.querySelectorAll(".player").forEach(p => p.remove());
+
+  jugadores.forEach((j, indice) => {
+    const b = document.createElement("button");
+    b.className = "player " + (j[5] ? "away" : "home");
+    b.style.left = j[2] + "%";
+    b.style.top = j[3] + "%";
+    b.setAttribute("aria-label", "Ver ficha de " + j[0]);
+    b.innerHTML = '<span class="shirt">' + j[1] +
+      '</span><span class="player-name">' + j[0] + '</span>';
+
+    if (seleccionado === indice) b.classList.add("selected");
+    b.addEventListener("click", () => mostrarFicha(indice));
+    campo.appendChild(b);
+  });
+}
+
+function mostrarFicha(indice) {
+  seleccionado = indice;
+  const j = jugadores[indice];
+  const local = j[5] === 0;
+  const equipo = local ? "Real Madrid" : "FC Barcelona";
+  const precision = j[9] ? Math.round(j[10] / j[9] * 100) : 0;
+
+  $("detalle").innerHTML = `
+    <div class="player-head">
+      <div class="big-shirt">${j[1]}</div>
+      <div>
+        <h2>${j[0]}</h2>
+        <div class="muted">${equipo}</div>
+        <span class="pill">${j[4]}</span>
+      </div>
     </div>
+    <div class="stat-grid">
+      <div class="stat-card"><span>Minutos</span><strong>${j[6]}</strong></div>
+      <div class="stat-card"><span>Goles</span><strong>${j[7]}</strong></div>
+      <div class="stat-card"><span>Asistencias</span><strong>${j[8]}</strong></div>
+      <div class="stat-card"><span>Valoración</span><strong>${j[13].toFixed(1)}</strong></div>
+      <div class="stat-card"><span>Pases acertados</span><strong>${j[10]}/${j[9]}</strong></div>
+      <div class="stat-card"><span>Precisión de pase</span><strong>${precision}%</strong></div>
+      <div class="stat-card"><span>Faltas</span><strong>${j[11]}</strong></div>
+      <div class="stat-card"><span>Tarjetas</span><strong>${j[12]} 🟨 · 0 🟥</strong></div>
+    </div>
+    <p class="muted" style="margin:14px 0 0">Estadísticas de demostración, no datos reales.</p>
   `;
-};
-  campo.appendChild(b);
-});
+  dibujarJugadores();
+}
+
+const statsPartido = [
+  {nombre:"Posesión", local:54, visitante:46, formato:"%"},
+  {nombre:"Tiros", local:13, visitante:9, formato:""},
+  {nombre:"Tiros a puerta", local:6, visitante:4, formato:""},
+  {nombre:"Pases completados", local:425, visitante:398, formato:""},
+  {nombre:"Precisión de pase", local:89, visitante:87, formato:"%"},
+  {nombre:"Córneres", local:5, visitante:4, formato:""},
+  {nombre:"Faltas", local:8, visitante:10, formato:""}
+];
+
+function dibujarEstadisticas() {
+  $("estadisticasPartido").innerHTML = statsPartido.map(s => `
+    <div class="bar-row">
+      <div class="bar-label">
+        <strong>${s.local}${s.formato}</strong>
+        <span>${s.nombre}</span>
+        <strong>${s.visitante}${s.formato}</strong>
+      </div>
+      <div style="display:flex;gap:4px">
+        <div class="bar" style="flex:1;display:flex;justify-content:flex-end">
+          <div class="bar-fill" style="width:${s.local/(s.local+s.visitante)*100}%"></div>
+        </div>
+        <div class="bar" style="flex:1">
+          <div class="bar-fill away" style="width:${s.visitante/(s.local+s.visitante)*100}%"></div>
+        </div>
+      </div>
+    </div>
+  `).join("");
+}
+
+function dibujarEventos() {
+  $("eventos").innerHTML = eventos.slice().reverse().map(e => `
+    <div class="event">
+      <span class="event-time">${e.minuto}</span>
+      <span>${e.texto}</span>
+    </div>
+  `).join("");
+  $("totalEventos").textContent = eventos.length;
+  $("totalAmarillas").textContent =
+    jugadores.reduce((total,j) => total + j[12], 0);
+}
+
+function dibujarAnalisis() {
+  const local = jugadores.filter(j => j[5] === 0);
+  const visitante = jugadores.filter(j => j[5] === 1);
+  const golesL = local.reduce((s,j) => s + j[7], 0);
+  const golesV = visitante.reduce((s,j) => s + j[7], 0);
+  const pasesL = local.reduce((s,j) => s + j[9], 0);
+  const pasesV = visitante.reduce((s,j) => s + j[9], 0);
+  const precisionL = Math.round(local.reduce((s,j) => s + j[10], 0) /
+    Math.max(1,pasesL) * 100);
+  const precisionV = Math.round(visitante.reduce((s,j) => s + j[10], 0) /
+    Math.max(1,pasesV) * 100);
+
+  $("analisis").innerHTML = `
+    <p><strong>Plan del Real Madrid</strong><br>
+    La formación busca amplitud por las bandas y llegadas de los centrocampistas.
+    Conviene aprovechar los espacios tras recuperar el balón.</p>
+    <p><strong>Plan del Barcelona</strong><br>
+    El equipo visitante busca progresar mediante pases y apoyos entre líneas.
+    La presión tras pérdida puede ayudar a recuperar la posesión.</p>
+    <p><strong>Lectura de los datos</strong><br>
+    Pases registrados en las fichas: ${pasesL} local y ${pasesV} visitante.
+    Precisión aproximada de esas fichas: ${precisionL}% y ${precisionV}%.</p>
+    <p class="muted">Análisis automático ilustrativo; no es un análisis de un partido real.</p>
+  `;
+}
+
+function dibujarTodo() {
+  $("marcador").textContent = golesLocal + " - " + golesVisitante;
+  $("reloj").textContent = reloj + "′ · SEGUNDA PARTE";
+  $("formLocal").textContent = formacionAlternativa ? "4-4-2" : "4-3-3";
+  dibujarJugadores();
+  dibujarEstadisticas();
+  dibujarEventos();
+  dibujarAnalisis();
+}
+
+function simularEvento() {
+  const opciones = [
+    {texto:"🟨 Tarjeta amarilla", tipo:"amarilla"},
+    {texto:"🎯 Ocasión de gol", tipo:"ocasion"},
+    {texto:"↔️ Sustitución simulada", tipo:"cambio"},
+    {texto:"⚽ ¡Gol!", tipo:"gol"}
+  ];
+  const evento = opciones[Math.floor(Math.random()*opciones.length)];
+  const minuto = Math.min(90, reloj + 1);
+  reloj = minuto;
+
+  if (evento.tipo === "gol") {
+    const local = Math.random() < 0.5;
+    if (local) golesLocal++; else golesVisitante++;
+    eventos.push({
+      minuto:minuto+"′",
+      texto:"⚽ Gol simulado del " + (local ? "Real Madrid" : "FC Barcelona"),
+      equipo:local ? 0 : 1
+    });
+  } else if (evento.tipo === "amarilla") {
+    const candidatos = jugadores.filter(j => j[12] < 2);
+    const j = candidatos[Math.floor(Math.random()*candidatos.length)];
+    j[12]++;
+    eventos.push({minuto:minuto+"′",texto:"🟨 Tarjeta simulada para "+j[0]});
+  } else {
+    eventos.push({minuto:minuto+"′",texto:evento.texto});
+  }
+
+  if (reloj >= 90) $("reloj").textContent = "90′ · FINAL";
+  dibujarTodo();
+}
 
 function moverBalon() {
-  document.getElementById("balon").style.left =
-    (10 + Math.random() * 80) + "%";
-  document.getElementById("balon").style.top =
-    (10 + Math.random() * 80) + "%";
+  const puntos = [
+    [28,34],[50,29],[72,34],[35,50],[65,50],[50,71],[25,65],[75,65]
+  ];
+  const punto = puntos[Math.floor(Math.random()*puntos.length)];
+  let balon = document.getElementById("balon");
+  if (!balon) {
+    balon = document.createElement("div");
+    balon.id = "balon";
+    balon.textContent = "⚽";
+    balon.style.cssText =
+      "position:absolute;z-index:5;font-size:22px;transform:translate(-50%,-50%);transition:all .4s;pointer-events:none";
+    campo.appendChild(balon);
+  }
+  balon.style.left = punto[0] + "%";
+  balon.style.top = punto[1] + "%";
 }
 
-function verEvento() {
-  document.getElementById("evento").textContent =
-    "Último evento: gol en el minuto 67'.";
+function cambiarFormacion() {
+  formacionAlternativa = !formacionAlternativa;
+  const posicionesLocal = formacionAlternativa
+    ? [[8,50],[23,18],[23,39],[23,61],[23,82],[42,20],[42,40],[42,60],[42,80],[68,35],[68,65]]
+    : [[8,50],[23,14],[23,36],[23,64],[23,86],[42,29],[42,50],[42,71],[66,22],[66,78],[68,50]];
+  jugadores.forEach((j,i) => {
+    if (j[5] === 0) {
+      j[2] = posicionesLocal[i][0];
+      j[3] = posicionesLocal[i][1];
+    }
+  });
+  dibujarTodo();
 }
+
+function reiniciarDemo() {
+  $("balon")?.remove();
+  reiniciarDatos();
+}
+
+$("eventoBtn").addEventListener("click", simularEvento);
+$("balonBtn").addEventListener("click", moverBalon);
+$("formacionBtn").addEventListener("click", cambiarFormacion);
+$("reiniciarBtn").addEventListener("click", reiniciarDemo);
+
+reiniciarDatos();
 </script>
 </body>
 </html>
