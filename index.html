@@ -191,12 +191,55 @@ jugadores.forEach(j => {
   b.innerHTML =
     '<span class="camiseta">' + j[1] + '</span>' +
     '<span class="nombre">' + j[0] + '</span>';
-  b.onclick = () => {
-    document.getElementById("detalle").innerHTML =
-      "<strong>" + j[0] + "</strong><br>" +
-      "Equipo: " + (j[5] ? "FC Barcelona" : "Real Madrid") +
-      "<br>Dorsal: " + j[1] + "<br>Posición: " + j[4];
-  };
+b.onclick = () => {
+  const equipo = j[5] ? "FC Barcelona" : "Real Madrid";
+
+  const stats = j[5]
+    ? { goles: 8, asistencias: 5, pases: 42, rating: 7.4 }
+    : { goles: 12, asistencias: 6, pases: 51, rating: 8.1 };
+
+  document.getElementById("detalle").innerHTML = `
+    <div style="padding:16px;background:#172630;border-radius:12px">
+      <div style="display:flex;align-items:center;gap:14px">
+        <div style="background:${j[5] ? '#f4d35e' : '#e63946'};
+                    color:${j[5] ? '#17202a' : 'white'};
+                    padding:16px;border-radius:12px;font-size:28px;font-weight:bold">
+          ${j[1]}
+        </div>
+        <div>
+          <h2 style="margin:0 0 6px">${j[0]}</h2>
+          <div>${equipo}</div>
+          <div style="color:#53e88b;margin-top:5px">${j[4]}</div>
+        </div>
+      </div>
+
+      <hr style="border-color:#42515c;margin:18px 0">
+
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px">
+        <div style="background:#243440;padding:14px;border-radius:8px">
+          <div style="color:#b8c5ce;font-size:13px">Goles</div>
+          <strong style="font-size:25px">${stats.goles}</strong>
+        </div>
+        <div style="background:#243440;padding:14px;border-radius:8px">
+          <div style="color:#b8c5ce;font-size:13px">Asistencias</div>
+          <strong style="font-size:25px">${stats.asistencias}</strong>
+        </div>
+        <div style="background:#243440;padding:14px;border-radius:8px">
+          <div style="color:#b8c5ce;font-size:13px">Pases</div>
+          <strong style="font-size:25px">${stats.pases}</strong>
+        </div>
+        <div style="background:#243440;padding:14px;border-radius:8px">
+          <div style="color:#b8c5ce;font-size:13px">Valoración</div>
+          <strong style="font-size:25px">${stats.rating}</strong>
+        </div>
+      </div>
+
+      <p style="color:#b8c5ce;font-size:12px;margin-bottom:0">
+        Estadísticas ilustrativas; no son datos reales del jugador.
+      </p>
+    </div>
+  `;
+};
   campo.appendChild(b);
 });
 
