@@ -268,7 +268,7 @@ footer { text-align:center; color:var(--muted); font-size:12px; padding:25px; }
 
 <script>
 const jugadoresIniciales = [
-  ["Courtois",1,8,23,"Portero",0,78,0,0,25,22,0,0,7.2],
+  ["Courtois",1,50,7,"Portero",0,78,0,0,25,22,0,0,7.2],
   ["Carvajal",2,23,14,"Defensa",0,78,0,1,43,38,1,1,7.1],
   ["Rüdiger",22,39,11,"Defensa",0,78,0,0,54,51,1,0,7.5],
   ["Nacho",6,61,11,"Defensa",0,78,0,0,47,44,1,0,6.9],
@@ -280,7 +280,7 @@ const jugadoresIniciales = [
   ["Vinícius",7,80,44,"Delantero",0,78,1,0,27,23,2,0,8.1],
   ["Joselu",14,50,43,"Delantero",0,30,0,0,10,7,1,0,6.7],
 
-  ["Ter Stegen",1,92,77,"Portero",1,78,0,0,29,26,0,0,7.1],
+  ["Ter Stegen",1,50,93,"Portero",1,78,0,0,29,26,0,0,7.1],
   ["Cancelo",2,77,86,"Defensa",1,78,0,1,48,43,1,0,7.2],
   ["Araujo",4,61,89,"Defensa",1,78,0,0,45,41,2,1,6.8],
   ["Christensen",15,39,89,"Defensa",1,78,0,0,49,46,0,0,7.0],
@@ -399,15 +399,41 @@ function dibujarEstadisticas() {
 }
 
 function dibujarEventos() {
-  $("eventos").innerHTML = eventos.slice().reverse().map(e => `
-    <div class="event">
-      <span class="event-time">${e.minuto}</span>
-      <span>${e.texto}</span>
+  const local = eventos.filter(e =>
+    e.equipo === 0 || e.texto.includes("Real Madrid")
+  );
+
+  const visitante = eventos.filter(e =>
+    e.equipo === 1 || e.texto.includes("Barcelona")
+  );
+
+  $("eventos").innerHTML = `
+    <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px">
+      <div style="min-width:0">
+        <h3 style="color:#e8edf0">⚪ Real Madrid</h3>
+        ${local.slice().reverse().map(e => `
+          <div class="event">
+            <span class="event-time">${e.minuto}</span>
+            <span>${e.texto}</span>
+          </div>
+        `).join("") || '<p class="muted">Sin eventos</p>'}
+      </div>
+
+      <div style="min-width:0">
+        <h3 style="color:#f4d35e">🟡 FC Barcelona</h3>
+        ${visitante.slice().reverse().map(e => `
+          <div class="event">
+            <span class="event-time">${e.minuto}</span>
+            <span>${e.texto}</span>
+          </div>
+        `).join("") || '<p class="muted">Sin eventos</p>'}
+      </div>
     </div>
-  `).join("");
+  `;
+
   $("totalEventos").textContent = eventos.length;
   $("totalAmarillas").textContent =
-    jugadores.reduce((total,j) => total + j[12], 0);
+    jugadores.reduce((total, j) => total + j[12], 0);
 }
 
 function dibujarAnalisis() {
