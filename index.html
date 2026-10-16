@@ -2,658 +2,381 @@
 <html lang="es">
 <head>
 <meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1">
-<meta name="theme-color" content="#0a1018">
-<title>Fútbol Interactivo PRO</title>
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Football Lab | Análisis táctico</title>
 <style>
-:root{
-  --bg:#090e15;--panel:#111a25;--panel2:#182433;
-  --line:#293747;--text:#f4f7fb;--muted:#91a2b5;
-  --green:#a6ff65;--green2:#39c878;--gold:#ffd76a;
-  --red:#ff6679;--blue:#74b8ff;
-}
+:root{--bg:#0b1018;--panel:#121b27;--line:#273547;--muted:#91a0b4;--green:#b8f36a;--blue:#56b8ff;--red:#ff667d}
 *{box-sizing:border-box}
-body{margin:0;background:var(--bg);color:var(--text);
-font:14px/1.45 Inter,system-ui,-apple-system,Arial,sans-serif}
-button,select{font:inherit}
-button{cursor:pointer}
-header{height:68px;padding:0 25px;display:flex;align-items:center;
-justify-content:space-between;gap:15px;border-bottom:1px solid var(--line);
-background:#0d141e;position:sticky;top:0;z-index:20}
-.brand{display:flex;align-items:center;gap:11px;font-size:17px;font-weight:900;letter-spacing:.3px}
-.brand-icon{display:grid;place-items:center;width:38px;height:38px;
-border-radius:12px;background:var(--green);color:#0b1710;font-size:22px}
-.brand em{font-style:normal;color:var(--green)}
-.header-right{display:flex;align-items:center;gap:10px}
-.live-dot{width:7px;height:7px;border-radius:50%;background:var(--green);display:inline-block}
-.pill{border:1px solid var(--line);border-radius:20px;padding:6px 10px;
-font-size:11px;color:var(--muted);white-space:nowrap}
-main{max-width:1600px;margin:auto;padding:22px}
-.eyebrow{color:var(--green);font-size:10px;letter-spacing:2px;font-weight:800;text-transform:uppercase}
-h1{font-size:25px;letter-spacing:-.8px;margin:5px 0}
-h2{font-size:16px;margin:0 0 5px;letter-spacing:-.2px}
-h3{font-size:12px;margin:0 0 12px}
-p{margin:0}
-.muted{color:var(--muted)}
-.small{font-size:11px}
-.topline{display:flex;align-items:center;justify-content:space-between;gap:12px;margin-bottom:20px}
-.top-actions{display:flex;gap:8px;flex-wrap:wrap}
-.btn{border:1px solid var(--line);border-radius:9px;padding:9px 12px;
-background:var(--panel2);color:var(--text);font-weight:650;font-size:12px}
-.btn:hover{border-color:var(--green)}
-.btn.primary{background:var(--green);border-color:var(--green);color:#0b1710}
-.btn.active{border-color:var(--green);color:var(--green);background:#1b3025}
-.match{display:grid;grid-template-columns:1fr auto 1fr;align-items:center;
-gap:15px;padding:18px 24px;background:linear-gradient(115deg,#152131,#111923);
-border:1px solid var(--line);border-radius:16px;margin-bottom:18px}
-.team{display:flex;align-items:center;gap:13px;min-width:0}
-.team.away{justify-content:flex-end;text-align:right}
-.crest{height:48px;width:48px;border-radius:14px;display:grid;place-items:center;
-font-size:24px;font-weight:900;flex-shrink:0;background:#263240}
-.crest.home{background:linear-gradient(135deg,#f5f5f5,#bdc6d0);color:#17202b}
-.crest.away{background:linear-gradient(135deg,#244da4,#b72d55);color:white}
-.team-name{font-size:15px;font-weight:800}
-.team-sub{font-size:11px;color:var(--muted);margin-top:3px}
-.scorebox{text-align:center;min-width:160px}
-.score{font-size:36px;letter-spacing:3px;font-weight:900;line-height:1.15}
-.clock{font-size:11px;color:var(--green);margin-top:7px;font-weight:800}
-.match-tag{display:inline-block;margin-top:7px;color:var(--muted);font-size:10px}
-.layout{display:grid;grid-template-columns:minmax(0,1.65fr) minmax(300px,.85fr);
-gap:18px;align-items:start}
-.leftcol,.rightcol{display:grid;gap:16px;min-width:0}
-.panel{background:var(--panel);border:1px solid var(--line);border-radius:14px;
-padding:17px;min-width:0}
-.panel-head{display:flex;justify-content:space-between;align-items:center;gap:12px;margin-bottom:15px}
-.panel-head p{font-size:11px;color:var(--muted);margin-top:4px}
-.select{border:1px solid var(--line);background:var(--panel2);color:var(--text);
-padding:8px 10px;border-radius:8px;max-width:145px;font-size:11px}
-.pitch-wrap{padding:8px;background:#101b24;border-radius:12px}
-.pitch{position:relative;width:100%;aspect-ratio:1.12;max-height:720px;overflow:hidden;
-border:2px solid #d6eadb;border-radius:4px;touch-action:pan-y;
-background:repeating-linear-gradient(0deg,#17663e 0,#17663e 8.33%,#1a7044 8.33%,#1a7044 16.66%)}
-.pitch:before{content:"";position:absolute;inset:0;border:1px solid #ffffff9c;pointer-events:none}
-.pitch-line{position:absolute;left:0;right:0;top:50%;border-top:1px solid #ffffffb5}
-.center-circle{position:absolute;left:50%;top:50%;width:24%;aspect-ratio:1;
-border:1px solid #ffffffb5;border-radius:50%;transform:translate(-50%,-50%)}
-.center-spot{position:absolute;left:50%;top:50%;width:5px;height:5px;border-radius:50%;
-background:#fff;transform:translate(-50%,-50%)}
-.box{position:absolute;left:28%;width:44%;height:13%;border:1px solid #ffffffb5}
-.box.top{top:0;border-top:0}.box.bottom{bottom:0;border-bottom:0}
-.six{position:absolute;left:39%;width:22%;height:5%;border:1px solid #ffffffb5}
-.six.top{top:0;border-top:0}.six.bottom{bottom:0;border-bottom:0}
-.penalty{position:absolute;left:50%;width:5px;height:5px;border-radius:50%;
-background:white;transform:translateX(-50%)}
-.penalty.top{top:9%}.penalty.bottom{bottom:9%}
-.arc{position:absolute;left:41%;width:18%;height:5%;border:1px solid #ffffffb5}
-.arc.top{top:10%;border-top:0;border-radius:0 0 50% 50%}
-.arc.bottom{bottom:10%;border-bottom:0;border-radius:50% 50% 0 0}
-.goal{position:absolute;left:42%;width:16%;height:3%;border:2px solid #e5f3e9}
-.goal.top{top:-2%;border-top:0}.goal.bottom{bottom:-2%;border-bottom:0}
-.pitch-label{position:absolute;left:50%;transform:translateX(-50%);font-size:9px;
-letter-spacing:2px;color:#ffffff8c;pointer-events:none}
-.pitch-label.top{top:16%}.pitch-label.bottom{bottom:16%}
-.player{position:absolute;transform:translate(-50%,-50%);z-index:4;
-border:0;background:transparent;color:white;display:flex;flex-direction:column;
-align-items:center;gap:2px;padding:2px;min-width:42px;touch-action:none}
-.shirt{height:27px;width:27px;border-radius:9px 9px 7px 7px;
-display:grid;place-items:center;background:#f1f4f6;color:#18202b;
-border:2px solid white;font-weight:900;font-size:10px;box-shadow:0 2px 5px #0007}
-.player.away .shirt{background:var(--gold);border-color:#fff3bd;color:#2a2412}
-.player.selected .shirt{outline:3px solid var(--green);outline-offset:2px}
-.player.selected{z-index:7}
-.player-name{font-size:9px;background:#07140edb;padding:2px 4px;border-radius:3px;
-white-space:nowrap;max-width:70px;overflow:hidden;text-overflow:ellipsis}
-.player:focus-visible{outline:2px solid var(--green)}
-.ball{position:absolute;z-index:8;transform:translate(-50%,-50%);font-size:21px;
-pointer-events:none;filter:drop-shadow(0 2px 2px #0009);transition:left .35s,top .35s}
-.tactical-svg{position:absolute;inset:0;width:100%;height:100%;z-index:3;
-pointer-events:none;overflow:visible}
-.pitch.draw-mode{cursor:crosshair;touch-action:manipulation}
-.tool-row{display:flex;gap:7px;flex-wrap:wrap;margin-top:12px}
-.tool-row .btn{flex:1;min-width:105px}
-.hint{font-size:10px;color:var(--muted);margin-top:10px}
-.two-stats{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:9px}
-.metric{background:var(--panel2);border:1px solid #263646;border-radius:10px;padding:12px}
-.metric-label{font-size:10px;color:var(--muted)}
-.metric-value{font-size:23px;font-weight:850;margin-top:5px}
-.metric-foot{font-size:10px;color:var(--green);margin-top:4px}
-.compare{margin-top:15px}
-.compare-row{margin:14px 0}
-.compare-label{display:flex;justify-content:space-between;align-items:center;
-gap:8px;font-size:11px;margin-bottom:7px}
-.compare-label span:nth-child(2){color:var(--muted);text-align:center}
-.bars{display:grid;grid-template-columns:1fr 1fr;gap:5px}
-.bar{height:7px;border-radius:8px;background:#2b3a48;overflow:hidden}
-.bar:first-child{display:flex;justify-content:flex-end}
-.fill{height:100%;background:var(--green);border-radius:8px}
-.fill.away{background:var(--gold)}
-.player-card{min-height:235px}
-.empty{padding:30px 10px;text-align:center;color:var(--muted);font-size:12px}
-.avatar{height:55px;width:55px;border-radius:15px;display:grid;place-items:center;
-background:linear-gradient(135deg,#b6ff80,#39bf78);color:#0b2114;font-size:23px;font-weight:900}
-.player-top{display:flex;gap:12px;align-items:center;margin-bottom:16px}
-.player-top h2{font-size:19px;margin-bottom:4px}
-.rating{margin-left:auto;text-align:center;background:#25372a;border:1px solid #3b6243;
-border-radius:12px;padding:8px 11px}
-.rating strong{display:block;font-size:22px;color:var(--green)}
-.rating span{font-size:9px;color:var(--muted)}
-.player-stats{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:8px}
-.pstat{background:var(--panel2);padding:11px;border-radius:8px}
-.pstat span{display:block;font-size:10px;color:var(--muted)}
-.pstat strong{font-size:19px;display:block;margin-top:4px}
-.team-events{display:grid;grid-template-columns:1fr 1fr;gap:12px}
-.event-column{min-width:0}
-.event-title{font-size:11px;font-weight:800;margin-bottom:8px}
-.event-title.home{color:#eaf0f6}.event-title.away{color:var(--gold)}
-.event{display:flex;gap:7px;padding:9px 0;border-bottom:1px solid var(--line);
-font-size:11px;overflow-wrap:anywhere}
-.event:last-child{border-bottom:0}
-.event-time{color:var(--green);font-weight:800;min-width:27px}
-.event-empty{font-size:10px;color:var(--muted);padding:10px 0}
-.event-symbol{margin-right:3px}
-.tactic-copy{font-size:12px;line-height:1.75;color:#c6d2dc}
-.tactic-copy strong{color:var(--text)}
-.form-grid{display:grid;grid-template-columns:1fr 1fr;gap:8px}
-.form-item{padding:12px;background:var(--panel2);border-radius:9px}
-.form-item span{display:block;font-size:10px;color:var(--muted)}
-.form-item strong{display:block;font-size:20px;margin-top:5px}
-.disclaimer{padding:13px 15px;border:1px solid #5a4c28;background:#282416;
-color:#e8d79c;border-radius:10px;font-size:11px;line-height:1.6;margin-top:17px}
-footer{text-align:center;padding:25px;color:#64768a;font-size:10px}
-.toast{position:fixed;bottom:18px;left:50%;transform:translateX(-50%);
-background:#e7ffe0;color:#102215;padding:11px 16px;border-radius:10px;
-font-size:12px;font-weight:750;z-index:50;box-shadow:0 8px 30px #0006;
-display:none;max-width:90%;text-align:center}
-@media(max-width:1050px){
- main{padding:15px}.layout{grid-template-columns:minmax(0,1fr) minmax(275px,.8fr)}
- .two-stats{grid-template-columns:repeat(2,minmax(0,1fr))}
-}
-@media(max-width:760px){
- header{height:60px;padding:0 14px}.brand{font-size:14px}.brand-icon{height:34px;width:34px}
- main{padding:12px}.topline{align-items:flex-start;flex-direction:column}
- .layout{grid-template-columns:1fr}.match{padding:14px 10px;gap:6px}
- .team{gap:7px}.crest{height:35px;width:35px;font-size:18px;border-radius:10px}
- .team-name{font-size:12px}.team-sub{font-size:9px}.scorebox{min-width:100px}
- .score{font-size:29px}.pitch{aspect-ratio:.94}.pitch-wrap{padding:5px}
- .player-name{font-size:8px;max-width:62px}.shirt{height:25px;width:25px}
- .panel{padding:13px}.team-events{gap:9px}
-}
-@media(max-width:390px){
- .team-name{font-size:10px}.team-sub{font-size:8px}.score{font-size:25px}
- .scorebox{min-width:82px}.pill{font-size:9px;padding:5px 7px}
- .player{min-width:34px}.player-name{max-width:53px;font-size:7px}
-}
+body{margin:0;background:var(--bg);color:#eef4fc;font-family:Inter,system-ui,Arial,sans-serif;font-size:14px}
+button,select,input{font:inherit}
+button,select{cursor:pointer}
+button{border:1px solid var(--line);background:#1a2736;color:#edf4fc;padding:9px 12px;border-radius:9px;transition:.18s}
+button:hover{border-color:var(--green);background:#243447}
+button.active,.primary{background:var(--green);color:#10180b;border-color:var(--green);font-weight:800}
+header{height:70px;border-bottom:1px solid var(--line);display:flex;align-items:center;justify-content:space-between;padding:0 24px;gap:16px;background:#0e1520}
+.brand{font-weight:900;letter-spacing:1.5px;font-size:17px}.brand span{color:var(--green)}
+.tag{color:var(--muted);font-size:11px;letter-spacing:1.3px}
+.score{display:flex;align-items:center;gap:15px;font-weight:800;font-size:20px}.score small{font-size:11px;color:var(--muted);display:block;text-align:center;font-weight:500}
+main{max-width:1600px;margin:auto;padding:20px;display:grid;grid-template-columns:260px minmax(380px,1fr) 280px;gap:18px}
+.panel{background:var(--panel);border:1px solid var(--line);border-radius:15px;overflow:hidden;min-width:0}
+.panel-head{padding:16px;border-bottom:1px solid var(--line);font-weight:800;display:flex;align-items:center;justify-content:space-between}
+.panel-body{padding:15px}
+.section-label{color:var(--muted);font-size:10px;font-weight:800;letter-spacing:1.4px;text-transform:uppercase;margin:5px 0 10px}
+.field{width:100%;padding:10px;border-radius:8px;border:1px solid var(--line);background:#0c1420;color:white;margin-bottom:14px}
+.team-label{display:flex;align-items:center;gap:8px;font-weight:800;margin:15px 0 8px}
+.dot{width:9px;height:9px;border-radius:50%;display:inline-block}
+.player-list{display:grid;gap:5px}
+.player-row{display:flex;align-items:center;gap:9px;padding:8px;border:1px solid transparent;border-radius:9px;background:#0e1722;cursor:pointer}
+.player-row:hover{border-color:#3b5269}.player-row.selected{border-color:var(--green);background:#202d25}
+.shirt{width:30px;height:30px;border-radius:50%;display:grid;place-items:center;font-weight:900;font-size:11px;flex-shrink:0}
+.player-row input{accent-color:var(--green);margin-left:auto}
+.player-name{font-size:12px;font-weight:700}.player-pos{font-size:10px;color:var(--muted);margin-top:3px}
+.center{display:flex;flex-direction:column;gap:15px;min-width:0}
+.toolbar{display:flex;gap:7px;flex-wrap:wrap;align-items:center}
+.pitch-wrap{padding:12px;background:#111a24;border:1px solid var(--line);border-radius:15px}
+.pitch{position:relative;width:100%;aspect-ratio: .79;max-height:780px;overflow:hidden;border:2px solid rgba(255,255,255,.7);border-radius:5px;background:repeating-linear-gradient(0deg,#17643e 0%,#17643e 12.5%,#1b7046 12.5%,#1b7046 25%);touch-action:pan-y}
+.pitch:before{content:"";position:absolute;inset:0;pointer-events:none;background:linear-gradient(90deg,transparent 49.8%,#ffffffad 49.8%,#ffffffad 50.2%,transparent 50.2%)}
+.mark{position:absolute;border:1.5px solid #ffffffad;pointer-events:none}
+.half{left:0;right:0;top:50%;height:0;border-top:1.5px solid #ffffffad}
+.circle{width:26%;aspect-ratio:1;border-radius:50%;left:37%;top:37%;border-radius:50%}
+.box-top{left:22%;top:0;width:56%;height:16%}.box-bottom{left:22%;bottom:0;width:56%;height:16%}
+.small-top{left:36%;top:0;width:28%;height:6%}.small-bottom{left:36%;bottom:0;width:28%;height:6%}
+.goal-top{left:40%;top:-1px;width:20%;height:2.5%;border-top:0}.goal-bottom{left:40%;bottom:-1px;width:20%;height:2.5%;border-bottom:0}
+.spot{width:5px;height:5px;border-radius:50%;background:white;left:calc(50% - 2px);top:11%}.spot2{top:auto;bottom:11%}
+.player{position:absolute;width:36px;height:36px;border-radius:50%;display:flex;align-items:center;justify-content:center;flex-direction:column;border:2px solid white;box-shadow:0 3px 8px #001b12a6;transform:translate(-50%,-50%);z-index:5;cursor:pointer;touch-action:none;user-select:none;transition:box-shadow .15s}
+.player .num{font-size:12px;font-weight:900;line-height:13px}.player .short{font-size:7px;font-weight:800;white-space:nowrap;position:absolute;top:37px;text-shadow:0 1px 3px #000,0 1px 5px #000;color:white}
+.player.selected{outline:3px solid var(--green);outline-offset:3px;z-index:8;box-shadow:0 0 18px #c0ff72a0}
+.player.pass-source{outline:3px solid white;outline-offset:4px}
+.ball{position:absolute;width:13px;height:13px;border-radius:50%;background:white;border:2px solid #17202b;box-shadow:0 0 0 3px #ffffff4a;transform:translate(-50%,-50%);z-index:10;pointer-events:none}
+svg.pass-layer{position:absolute;inset:0;width:100%;height:100%;z-index:4;pointer-events:none;overflow:visible}
+.heat-layer{position:absolute;inset:0;width:100%;height:100%;pointer-events:none;z-index:2;mix-blend-mode:screen}
+.help{font-size:11px;color:var(--muted);line-height:1.6;margin-top:10px}
+.metrics{display:grid;grid-template-columns:repeat(4,1fr);gap:9px}
+.metric{padding:13px;background:var(--panel);border:1px solid var(--line);border-radius:12px}
+.metric .value{font-size:23px;font-weight:900;margin-top:6px}.metric .label{font-size:10px;color:var(--muted);text-transform:uppercase;letter-spacing:.7px}
+.right-stack{display:flex;flex-direction:column;gap:15px}
+.big-number{font-size:34px;font-weight:900}.muted{color:var(--muted)}
+.statline{display:flex;justify-content:space-between;gap:8px;padding:10px 0;border-bottom:1px solid var(--line);font-size:12px}
+.bar{height:5px;border-radius:9px;background:#263547;margin-top:6px;overflow:hidden}.bar span{height:100%;display:block;background:var(--green)}
+.event{display:flex;gap:9px;padding:10px 0;border-bottom:1px solid var(--line);font-size:12px;line-height:1.5}
+.event:last-child{border:0}.event-time{font-weight:900;color:var(--green);min-width:32px}
+.event.home .event-time{color:var(--green)}.event.away .event-time{color:var(--blue)}
+.events-columns{display:grid;grid-template-columns:1fr 1fr;gap:12px}
+.events-team{background:#0d1520;border-radius:10px;padding:10px;min-width:0}
+.events-team h4{margin:0 0 7px;font-size:11px}
+.event-row{font-size:11px;padding:8px 0;border-top:1px solid var(--line);overflow-wrap:anywhere}
+.pill{display:inline-block;border-radius:5px;padding:3px 6px;font-size:10px;background:#263547;color:#d9e5f4}
+.action-row{display:flex;gap:8px;flex-wrap:wrap}
+.action-row button{flex:1}
+.empty{color:var(--muted);font-size:12px;padding:12px 0}
+.player-card{display:flex;align-items:center;gap:12px;margin-bottom:14px}
+.player-card .shirt{width:48px;height:48px;font-size:16px}
+.player-card h3{margin:0 0 5px;font-size:16px}
+.hint{padding:10px;border:1px solid #304253;border-radius:9px;background:#0d1520;color:var(--muted);font-size:11px;line-height:1.6;margin-top:10px}
+@media(max-width:1100px){main{grid-template-columns:230px minmax(330px,1fr)}.right-stack{grid-column:1/-1;display:grid;grid-template-columns:1fr 1fr}.right-stack .panel:last-child{grid-column:1/-1}}
+@media(max-width:700px){header{padding:12px;flex-wrap:wrap;height:auto}.brand{font-size:14px}.score{font-size:17px}main{display:flex;flex-direction:column;padding:10px;gap:12px}.center{order:0}.left-panel{order:1}.right-stack{order:2;display:flex}.pitch-wrap{padding:6px}.pitch{aspect-ratio:.72}.player{width:29px;height:29px}.player .short{font-size:6px;top:30px}.metrics{grid-template-columns:repeat(2,1fr)}.toolbar button{flex:1}.events-columns{gap:6px}.events-team{padding:7px}}
 </style>
 </head>
 <body>
 <header>
-  <div class="brand"><div class="brand-icon">⚽</div><div>FÚTBOL <em>INTERACTIVO</em></div></div>
-  <div class="header-right">
-    <span class="pill"><span class="live-dot"></span> MODO DEMO</span>
-    <span class="pill">PRO · TÁCTICA</span>
-  </div>
+  <div><div class="brand">FOOTBALL <span>LAB</span></div><div class="tag">TACTICAL MATCH ANALYSIS</div></div>
+  <div class="score"><div><small>LOCAL</small><span id="homeName">REAL MADRID</span></div><strong id="score">2 — 1</strong><div><small>VISITANTE</small><span id="awayName">BARCELONA</span></div></div>
+  <div><div class="tag">PARTIDO</div><strong id="clock">00:00</strong></div>
 </header>
 
 <main>
-  <div class="topline">
-    <div>
-      <div class="eyebrow">Centro de análisis · Partido de ejemplo</div>
-      <h1>Panel de partido</h1>
-      <p class="muted small">Táctica, rendimiento y estadísticas en un solo lugar.</p>
-    </div>
-    <div class="top-actions">
-      <button class="btn" id="pauseBtn">Ⅱ Pausar reloj</button>
-      <button class="btn primary" id="resetBtn">↻ Reiniciar partido</button>
-    </div>
+<section class="panel left-panel">
+  <div class="panel-head">Plantillas <span class="pill" id="selectedCount">0 seleccionados</span></div>
+  <div class="panel-body">
+    <div class="section-label">Equipo local</div>
+    <select class="field" id="homeFormation">
+      <option>4-3-3</option><option>4-4-2</option><option>4-2-3-1</option><option>3-5-2</option>
+    </select>
+    <div class="section-label">Selecciona jugadores para el mapa de calor</div>
+    <div id="homePlayers" class="player-list"></div>
+    <div class="team-label"><span class="dot" style="background:var(--blue)"></span> Visitante</div>
+    <select class="field" id="awayFormation">
+      <option>4-3-3</option><option>4-4-2</option><option>4-2-3-1</option><option>3-5-2</option>
+    </select>
+    <div id="awayPlayers" class="player-list"></div>
+    <div class="hint">Marca la casilla de uno o varios jugadores para filtrar su mapa de calor. Haz clic en el jugador del campo para seleccionarlo.</div>
   </div>
+</section>
 
-  <section class="match">
-    <div class="team">
-      <div class="crest home">R</div>
-      <div><div class="team-name">Real Madrid</div><div class="team-sub">LOCAL · BLANCO</div></div>
+<section class="center">
+  <div class="toolbar">
+    <button id="heatBtn" class="active">◉ Mapa de calor</button>
+    <button id="passBtn">↗ Crear pase</button>
+    <button id="clearPassBtn">Borrar pases</button>
+    <button id="resetBtn">Reiniciar</button>
+  </div>
+  <div class="pitch-wrap">
+    <div class="pitch" id="pitch">
+      <div class="mark half"></div><div class="mark circle"></div>
+      <div class="mark box-top"></div><div class="mark box-bottom"></div>
+      <div class="mark small-top"></div><div class="mark small-bottom"></div>
+      <div class="mark goal-top"></div><div class="mark goal-bottom"></div>
+      <div class="mark spot"></div><div class="mark spot spot2"></div>
+      <canvas id="heatCanvas" class="heat-layer"></canvas>
+      <svg id="passSvg" class="pass-layer" viewBox="0 0 100 100" preserveAspectRatio="none">
+        <defs><marker id="arrow" markerWidth="4" markerHeight="4" refX="3" refY="2" orient="auto"><path d="M0,0 L4,2 L0,4 Z" fill="#fff"/></marker></defs>
+        <g id="passPaths"></g>
+      </svg>
+      <div id="playersLayer"></div>
+      <div id="ball" class="ball" style="left:50%;top:50%"></div>
     </div>
-    <div class="scorebox">
-      <div class="score"><span id="scoreHome">2</span> <span style="color:#637487">:</span> <span id="scoreAway">1</span></div>
-      <div class="clock" id="clock">78:00 · 2.ª PARTE</div>
-      <div class="match-tag">Partido de demostración</div>
-    </div>
-    <div class="team away">
-      <div><div class="team-name">FC Barcelona</div><div class="team-sub">VISITANTE · AMARILLO</div></div>
-      <div class="crest away">B</div>
+    <div class="help" id="pitchHelp">Selecciona un jugador. Arrástralo para cambiar su posición. Activa «Crear pase», elige al pasador y luego al receptor.</div>
+  </div>
+  <div class="metrics">
+    <div class="metric"><div class="label">Posesión local</div><div class="value" id="possession">58%</div></div>
+    <div class="metric"><div class="label">Pases completados</div><div class="value" id="passCount">0</div></div>
+    <div class="metric"><div class="label">Tiros totales</div><div class="value" id="shots">8</div></div>
+    <div class="metric"><div class="label">Distancia pase</div><div class="value" id="distance">—</div></div>
+  </div>
+  <section class="panel">
+    <div class="panel-head">Cronología del partido <button id="eventBtn" class="primary">+ Simular evento</button></div>
+    <div class="panel-body">
+      <div class="events-columns">
+        <div class="events-team"><h4><span class="dot" style="background:var(--green)"></span> REAL MADRID</h4><div id="homeEvents"></div></div>
+        <div class="events-team"><h4><span class="dot" style="background:var(--blue)"></span> BARCELONA</h4><div id="awayEvents"></div></div>
+      </div>
     </div>
   </section>
+</section>
 
-  <div class="layout">
-    <div class="leftcol">
-      <section class="panel">
-        <div class="panel-head">
-          <div><h2>Campo táctico</h2><p>Selecciona o arrastra un jugador para cambiar su posición.</p></div>
-          <select class="select" id="formation" aria-label="Formación del equipo local">
-            <option value="433">Local · 4-3-3</option>
-            <option value="442">Local · 4-4-2</option>
-            <option value="4231">Local · 4-2-3-1</option>
-          </select>
-        </div>
-
-        <div class="pitch-wrap">
-          <div class="pitch" id="pitch">
-            <div class="pitch-line"></div><div class="center-circle"></div><div class="center-spot"></div>
-            <div class="box top"></div><div class="box bottom"></div>
-            <div class="six top"></div><div class="six bottom"></div>
-            <div class="penalty top"></div><div class="penalty bottom"></div>
-            <div class="arc top"></div><div class="arc bottom"></div>
-            <div class="goal top"></div><div class="goal bottom"></div>
-            <div class="pitch-label top">REAL MADRID</div>
-            <div class="pitch-label bottom">FC BARCELONA</div>
-            <svg class="tactical-svg" id="tacticalSvg" viewBox="0 0 100 100" preserveAspectRatio="none"></svg>
-            <div class="ball" id="ball" style="left:50%;top:50%">⚽</div>
-          </div>
-        </div>
-        <div class="tool-row">
-          <button class="btn" id="drawBtn">↗ Dibujar pase</button>
-          <button class="btn" id="moveBallBtn">⚽ Mover balón</button>
-          <button class="btn" id="formationBtn">⇄ Cambiar esquema</button>
-          <button class="btn" id="clearBtn">⌫ Borrar flechas</button>
-        </div>
-        <p class="hint" id="pitchHint">Consejo: arrastra un jugador. Activa «Dibujar pase» y toca dos puntos del campo para crear una flecha.</p>
-      </section>
-
-      <section class="panel">
-        <div class="panel-head"><div><h2>Estadísticas del partido</h2><p>Comparativa entre ambos equipos.</p></div><span class="pill">DEMO</span></div>
-        <div class="two-stats">
-          <div class="metric"><div class="metric-label">Posesión local</div><div class="metric-value" id="posHome">54%</div><div class="metric-foot">Real Madrid</div></div>
-          <div class="metric"><div class="metric-label">Posesión visitante</div><div class="metric-value" id="posAway">46%</div><div class="metric-foot" style="color:var(--gold)">Barcelona</div></div>
-          <div class="metric"><div class="metric-label">Tiros totales</div><div class="metric-value" id="shotsHome">13</div><div class="metric-foot">Local</div></div>
-          <div class="metric"><div class="metric-label">Tiros totales</div><div class="metric-value" id="shotsAway">9</div><div class="metric-foot" style="color:var(--gold)">Visitante</div></div>
-        </div>
-        <div class="compare" id="compare"></div>
-      </section>
-
-      <section class="panel">
-        <div class="panel-head"><div><h2>Eventos del partido</h2><p>Los sucesos se muestran en la columna de su equipo.</p></div><button class="btn primary" id="eventBtn">＋ Simular evento</button></div>
-        <div class="team-events">
-          <div class="event-column"><div class="event-title home">⚪ REAL MADRID</div><div id="eventsHome"></div></div>
-          <div class="event-column"><div class="event-title away">🟡 FC BARCELONA</div><div id="eventsAway"></div></div>
-        </div>
-      </section>
+<aside class="right-stack">
+  <section class="panel">
+    <div class="panel-head">Jugador seleccionado</div>
+    <div class="panel-body" id="playerDetails"><div class="empty">Selecciona un jugador del campo.</div></div>
+  </section>
+  <section class="panel">
+    <div class="panel-head">Acciones tácticas</div>
+    <div class="panel-body">
+      <div class="section-label">Pases</div>
+      <div class="action-row"><button id="passFromBtn">Elegir pasador</button><button id="passToBtn">Elegir receptor</button></div>
+      <div class="hint" id="passStatus">Modo normal. Activa «Crear pase» para empezar.</div>
+      <div class="section-label" style="margin-top:18px">Partido</div>
+      <div class="action-row"><button id="playBtn" class="primary">▶ Iniciar reloj</button><button id="goalBtn">⚽ Gol</button></div>
+      <div class="section-label" style="margin-top:18px">Datos del jugador</div>
+      <div id="playerStats"><div class="empty">Elige un jugador para ver sus datos.</div></div>
     </div>
-
-    <aside class="rightcol">
-      <section class="panel player-card" id="playerCard">
-        <div class="panel-head"><div><h2>Ficha del jugador</h2><p>Perfil y rendimiento individual.</p></div></div>
-        <div class="empty">👕<br><br>Selecciona un jugador del campo para consultar sus estadísticas.</div>
-      </section>
-
-      <section class="panel">
-        <div class="panel-head"><div><h2>Lectura táctica</h2><p>Observaciones basadas en los datos de ejemplo.</p></div></div>
-        <div class="tactic-copy" id="analysis"></div>
-      </section>
-
-      <section class="panel">
-        <div class="panel-head"><div><h2>Resumen de equipos</h2><p>Datos de la simulación actual.</p></div></div>
-        <div class="form-grid">
-          <div class="form-item"><span>Esquema local</span><strong id="formLabel">4-3-3</strong></div>
-          <div class="form-item"><span>Eventos</span><strong id="eventCount">3</strong></div>
-          <div class="form-item"><span>Amarillas</span><strong id="yellowCount">3</strong></div>
-          <div class="form-item"><span>Rojas</span><strong id="redCount">1</strong></div>
-        </div>
-      </section>
-    </aside>
-  </div>
-
-  <div class="disclaimer">⚠️ <strong>Modo de demostración:</strong> marcador, jugadores y estadísticas son datos ilustrativos, no datos oficiales ni en directo de LaLiga. Los eventos aleatorios modifican la simulación localmente. Esta página no envía ni guarda datos en un servidor.</div>
+  </section>
+</aside>
 </main>
-<footer>FÚTBOL INTERACTIVO PRO · Proyecto independiente · Diseñado para GitHub Pages</footer>
-<div class="toast" id="toast" role="status"></div>
 
 <script>
-"use strict";
-
-const $ = id => document.getElementById(id);
-
-const initialPlayers = [
- {id:1,name:"Courtois",num:1,team:0,pos:"Portero",x:50,y:7,min:78,g:0,a:0,passes:25,accurate:22,fouls:0,yellow:0,red:0,rating:7.2},
- {id:2,name:"Carvajal",num:2,team:0,pos:"Defensa",x:22,y:17,min:78,g:0,a:1,passes:43,accurate:38,fouls:1,yellow:1,red:0,rating:7.1},
- {id:3,name:"Rüdiger",num:22,team:0,pos:"Defensa",x:41,y:13,min:78,g:0,a:0,passes:54,accurate:51,fouls:1,yellow:0,red:0,rating:7.5},
- {id:4,name:"Nacho",num:6,team:0,pos:"Defensa",x:59,y:13,min:78,g:0,a:0,passes:47,accurate:44,fouls:1,yellow:0,red:0,rating:6.9},
- {id:5,name:"Mendy",num:23,team:0,pos:"Defensa",x:78,y:17,min:78,g:0,a:0,passes:36,accurate:32,fouls:2,yellow:0,red:0,rating:6.8},
- {id:6,name:"Valverde",num:15,team:0,pos:"Centrocampista",x:30,y:31,min:78,g:0,a:1,passes:49,accurate:44,fouls:1,yellow:0,red:0,rating:7.4},
- {id:7,name:"Kroos",num:8,team:0,pos:"Centrocampista",x:50,y:29,min:78,g:0,a:1,passes:67,accurate:63,fouls:0,yellow:0,red:0,rating:7.8},
- {id:8,name:"Bellingham",num:5,team:0,pos:"Centrocampista",x:70,y:31,min:78,g:1,a:0,passes:38,accurate:34,fouls:1,yellow:0,red:0,rating:8.2},
- {id:9,name:"Rodrygo",num:11,team:0,pos:"Delantero",x:23,y:43,min:78,g:0,a:0,passes:22,accurate:18,fouls:1,yellow:0,red:0,rating:6.9},
- {id:10,name:"Vinícius",num:7,team:0,pos:"Delantero",x:77,y:43,min:78,g:1,a:0,passes:27,accurate:23,fouls:2,yellow:0,red:0,rating:8.1},
- {id:11,name:"Joselu",num:14,team:0,pos:"Delantero",x:50,y:43,min:30,g:0,a:0,passes:10,accurate:7,fouls:1,yellow:0,red:0,rating:6.7},
-
- {id:12,name:"Ter Stegen",num:1,team:1,pos:"Portero",x:50,y:93,min:78,g:0,a:0,passes:29,accurate:26,fouls:0,yellow:0,red:0,rating:7.1},
- {id:13,name:"Cancelo",num:2,team:1,pos:"Defensa",x:78,y:83,min:78,g:0,a:1,passes:48,accurate:43,fouls:1,yellow:0,red:0,rating:7.2},
- {id:14,name:"Araujo",num:4,team:1,pos:"Defensa",x:59,y:87,min:78,g:0,a:0,passes:45,accurate:41,fouls:2,yellow:1,red:0,rating:6.8},
- {id:15,name:"Christensen",num:15,team:1,pos:"Defensa",x:41,y:87,min:78,g:0,a:0,passes:49,accurate:46,fouls:0,yellow:0,red:0,rating:7.0},
- {id:16,name:"Balde",num:3,team:1,pos:"Defensa",x:22,y:83,min:78,g:0,a:0,passes:33,accurate:29,fouls:1,yellow:0,red:0,rating:6.9},
- {id:17,name:"Gündogan",num:22,team:1,pos:"Centrocampista",x:70,y:69,min:78,g:0,a:1,passes:57,accurate:52,fouls:1,yellow:0,red:0,rating:7.3},
- {id:18,name:"De Jong",num:21,team:1,pos:"Centrocampista",x:50,y:71,min:78,g:0,a:0,passes:61,accurate:58,fouls:1,yellow:0,red:0,rating:7.6},
- {id:19,name:"Pedri",num:8,team:1,pos:"Centrocampista",x:30,y:69,min:65,g:0,a:0,passes:39,accurate:36,fouls:0,yellow:0,red:0,rating:7.0},
- {id:20,name:"Raphinha",num:11,team:1,pos:"Delantero",x:77,y:57,min:78,g:1,a:0,passes:25,accurate:20,fouls:2,yellow:0,red:0,rating:7.8},
- {id:21,name:"Ferran",num:7,team:1,pos:"Delantero",x:23,y:57,min:60,g:0,a:0,passes:18,accurate:14,fouls:1,yellow:0,red:0,rating:6.6},
- {id:22,name:"Lewandowski",num:9,team:1,pos:"Delantero",x:50,y:57,min:78,g:0,a:0,passes:23,accurate:18,fouls:2,yellow:0,red:0,rating:6.9}
-];
-
-const initialStats = [
- {name:"Posesión",h:54,a:46,suffix:"%"},
- {name:"Tiros",h:13,a:9,suffix:""},
- {name:"Tiros a puerta",h:6,a:4,suffix:""},
- {name:"Pases completados",h:425,a:398,suffix:""},
- {name:"Precisión de pase",h:89,a:87,suffix:"%"},
- {name:"Córneres",h:5,a:4,suffix:""},
- {name:"Faltas",h:8,a:10,suffix:""}
-];
-
-let players = [];
-let stats = [];
-let events = [];
-let scoreH = 2, scoreA = 1, seconds = 78 * 60;
-let selectedId = null, drawMode = false, drawStart = null;
-let arrows = [], formation = "433", clockRunning = false, timer = null;
-let ballPos = {x:50,y:50};
-let toastTimer = null;
-
-function notify(message){
- const t=$("toast");
- t.textContent=message;
- t.style.display="block";
- clearTimeout(toastTimer);
- toastTimer=setTimeout(()=>t.style.display="none",2400);
+(()=>{
+const $=id=>document.getElementById(id);
+const colors=['#b8f36a','#56b8ff'];
+const squads=[
+[
+['Courtois','POR',1],['Carvajal','DEF',2],['Rüdiger','DEF',22],['Militão','DEF',3],['Mendy','DEF',23],
+['Valverde','MED',8],['Tchouaméni','MED',14],['Bellingham','MED',5],
+['Rodrygo','DEL',11],['Mbappé','DEL',9],['Vinícius','DEL',7]
+],
+[
+['Ter Stegen','POR',1],['Koundé','DEF',23],['Araujo','DEF',4],['Cubarsí','DEF',2],['Balde','DEF',3],
+['Pedri','MED',8],['De Jong','MED',21],['Gavi','MED',6],
+['Yamal','DEL',19],['Lewandowski','DEL',9],['Raphinha','DEL',11]
+]];
+const shapes={
+'4-3-3':[[50,7],[17,22],[39,19],[61,19],[83,22],[31,39],[50,35],[69,39],[20,64],[50,76],[80,64]],
+'4-4-2':[[50,7],[17,22],[39,19],[61,19],[83,22],[17,42],[39,39],[61,39],[83,42],[37,70],[63,70]],
+'4-2-3-1':[[50,7],[17,22],[39,19],[61,19],[83,22],[38,36],[62,36],[20,54],[50,50],[80,54],[50,75]],
+'3-5-2':[[50,7],[27,21],[50,18],[73,21],[13,43],[34,36],[50,40],[66,36],[87,43],[37,69],[63,69]]
+};
+let players=[], selected=null, heatSelected=new Set(), heatOn=true, passMode=false, passStep=0, passSource=null, passes=[], ballTimer=null, elapsed=0, clockInterval=null, score=[2,1], shots=8, passDistance=0, passCount=0, dragging=null, dragMoved=false, lastPoint=null;
+let events=[[
+{t:"12′",txt:"Gol · Mbappé",type:"goal"},{t:"34′",txt:"Gol · Vinícius",type:"goal"}
+],[{t:"28′",txt:"Gol · Lewandowski",type:"goal"}]];
+function makePlayers(){
+ players=[];
+ squads.forEach((team,side)=>team.forEach((p,i)=>{
+ const pos=shapes['4-3-3'][i];
+ players.push({id:side*11+i,side,name:p[0],role:p[1],number:p[2],x:pos[0],y:side===0?pos[1]:100-pos[1],heat:[],stats:{passes:0,shots:0,distance:0,actions:0}});
+ }));
+ players.forEach(p=>{p.heat.push({x:p.x,y:p.y})});
 }
-
-function resetGame(){
- if(timer) clearInterval(timer);
- timer=null;
- clockRunning=false;
- $("pauseBtn").textContent="▶ Iniciar reloj";
- players=initialPlayers.map(p=>({...p}));
- stats=initialStats.map(s=>({...s}));
- events=[
-  {min:12,team:0,type:"goal",text:"Gol de Vinícius"},
-  {min:36,team:1,type:"goal",text:"Gol de Raphinha"},
-  {min:64,team:0,type:"goal",text:"Gol de Bellingham"}
- ];
- scoreH=2;scoreA=1;seconds=78*60;
- selectedId=null;drawMode=false;drawStart=null;arrows=[];
- formation="433";ballPos={x:50,y:50};
- $("formation").value="433";
- $("drawBtn").classList.remove("active");
- $("ball").style.left="50%";$("ball").style.top="50%";
- renderAll();
- notify("Partido de demostración reiniciado");
+function renderRoster(){
+ [0,1].forEach(side=>{
+ const root=$(['homePlayers','awayPlayers'][side]);root.innerHTML='';
+ players.filter(p=>p.side===side).forEach(p=>{
+ const row=document.createElement('label');row.className='player-row'+(heatSelected.has(p.id)?' selected':'');
+ row.innerHTML=`<span class="shirt" style="background:${colors[side]};color:#101820">${p.number}</span><span style="min-width:0"><div class="player-name">${p.name}</div><div class="player-pos">${p.role}</div></span><input type="checkbox" ${heatSelected.has(p.id)?'checked':''} aria-label="Mapa de calor ${p.name}">`;
+ row.querySelector('input').addEventListener('change',e=>{
+ if(e.target.checked)heatSelected.add(p.id);else heatSelected.delete(p.id);
+ row.classList.toggle('selected',e.target.checked);updateHeat();updateSelectedCount();
+ });
+ root.appendChild(row);
+ });
+ });
+ updateSelectedCount();
 }
-
+function updateSelectedCount(){$('selectedCount').textContent=heatSelected.size+' seleccionados'}
 function renderPlayers(){
- document.querySelectorAll(".player").forEach(e=>e.remove());
+ const layer=$('playersLayer');layer.innerHTML='';
  players.forEach(p=>{
-  const b=document.createElement("button");
-  b.type="button";
-  b.className="player "+(p.team===1?"away":"home")+(p.id===selectedId?" selected":"");
-  b.style.left=p.x+"%";b.style.top=p.y+"%";
-  b.setAttribute("aria-label",p.name+", dorsal "+p.num);
-  b.title=p.name+" · arrastra para mover";
-  b.innerHTML='<span class="shirt">'+p.num+'</span><span class="player-name"></span>';
-  b.querySelector(".player-name").textContent=p.name;
-  b.addEventListener("click",e=>{
-   if(b.dataset.dragged==="yes"){b.dataset.dragged="no";return;}
-   if(drawMode){pitchClick(p.x,p.y);return;}
-   selectedId=p.id;renderPlayers();renderPlayerCard();
-  });
-  b.addEventListener("pointerdown",e=>startDrag(e,b,p));
-  $("pitch").appendChild(b);
+ const el=document.createElement('button');el.className='player'+(selected===p.id?' selected':'')+(passSource===p.id?' pass-source':'');
+ el.style.left=p.x+'%';el.style.top=p.y+'%';el.style.background=colors[p.side];el.style.color='#10202b';
+ el.innerHTML=`<span class="num">${p.number}</span><span class="short">${p.name}</span>`;
+ el.title=p.name+' · '+p.role;el.setAttribute('aria-label',p.name);
+ el.addEventListener('pointerdown',e=>{
+ if(passMode){e.preventDefault();choosePassPlayer(p.id);return}
+ e.preventDefault();dragging=p.id;dragMoved=false;selected=p.id;
+ el.setPointerCapture?.(e.pointerId);renderPlayers();renderDetails();
+ });
+ el.addEventListener('click',e=>{
+ if(passMode){choosePassPlayer(p.id);return}
+ if(dragMoved)return;selected=p.id;renderPlayers();renderDetails();
+ });
+ layer.appendChild(el);
+ });
+ drawPasses();updateHeat();
+}
+function renderDetails(){
+ const p=players.find(p=>p.id===selected);
+ if(!p){$('playerDetails').innerHTML='<div class="empty">Selecciona un jugador del campo.</div>';$('playerStats').innerHTML='<div class="empty">Elige un jugador para ver sus datos.</div>';return}
+ $('playerDetails').innerHTML=`<div class="player-card"><div class="shirt" style="background:${colors[p.side]};color:#10202b">${p.number}</div><div><h3>${p.name}</h3><div class="muted">${p.side===0?'Real Madrid':'Barcelona'} · ${p.role}</div></div></div><div class="statline"><span>Posición en campo</span><b>${Math.round(p.x)}%, ${Math.round(p.y)}%</b></div><div class="statline"><span>Pases realizados</span><b>${p.stats.passes}</b></div><div class="statline"><span>Acciones registradas</span><b>${p.stats.actions}</b></div><div style="margin-top:12px"><button class="${heatSelected.has(p.id)?'active':''}" id="heatPlayerBtn">${heatSelected.has(p.id)?'✓ En mapa de calor':'＋ Añadir al mapa de calor'}</button></div>`;
+ $('heatPlayerBtn').onclick=()=>{if(heatSelected.has(p.id))heatSelected.delete(p.id);else heatSelected.add(p.id);renderRoster();updateHeat();renderDetails()};
+ $('playerStats').innerHTML=`<div class="statline"><span>Equipo</span><b>${p.side===0?'Local':'Visitante'}</b></div><div class="statline"><span>Posición</span><b>${p.role}</b></div><div class="statline"><span>Pases</span><b>${p.stats.passes}</b></div><div class="statline"><span>Distancia acumulada</span><b>${p.stats.distance.toFixed(1)} m</b></div><div class="statline"><span>Tiros</span><b>${p.stats.shots}</b></div>`;
+}
+function updateHeat(){
+ const c=$('heatCanvas'),pitch=$('pitch'),w=pitch.clientWidth,h=pitch.clientHeight;
+ if(!w||!h)return;
+ c.width=Math.round(w*devicePixelRatio);c.height=Math.round(h*devicePixelRatio);
+ c.style.width=w+'px';c.style.height=h+'px';
+ const ctx=c.getContext('2d');ctx.setTransform(devicePixelRatio,0,0,devicePixelRatio,0,0);ctx.clearRect(0,0,w,h);
+ if(!heatOn)return;
+ heatSelected.forEach(id=>{
+ const p=players.find(q=>q.id===id);if(!p)return;
+ const points=p.heat.length?p.heat:[{x:p.x,y:p.y}];
+ points.forEach((pt,i)=>{
+ const x=pt.x*w/100,y=pt.y*h/100,r=Math.min(w,h)*.105;
+ const g=ctx.createRadialGradient(x,y,0,x,y,r);
+ g.addColorStop(0,p.side===0?'rgba(255,55,35,.55)':'rgba(50,155,255,.55)');
+ g.addColorStop(.35,p.side===0?'rgba(255,180,30,.35)':'rgba(40,220,255,.3)');
+ g.addColorStop(1,'rgba(0,0,0,0)');
+ ctx.fillStyle=g;ctx.beginPath();ctx.arc(x,y,r,0,Math.PI*2);ctx.fill();
+ });
  });
 }
-
-function startDrag(e,b,p){
- if(drawMode)return;
- e.preventDefault();
- const pitch=$("pitch");
- const rect=pitch.getBoundingClientRect();
- const startX=e.clientX,startY=e.clientY;
- const origX=p.x,origY=p.y;
- let moved=false;
- b.setPointerCapture?.(e.pointerId);
- function move(ev){
-  const dx=(ev.clientX-startX)/rect.width*100;
-  const dy=(ev.clientY-startY)/rect.height*100;
-  if(Math.abs(dx)+Math.abs(dy)>1)moved=true;
-  if(!moved)return;
-  p.x=Math.max(3,Math.min(97,origX+dx));
-  p.y=Math.max(4,Math.min(96,origY+dy));
-  b.style.left=p.x+"%";b.style.top=p.y+"%";
- }
- function end(){
-  b.removeEventListener("pointermove",move);
-  b.removeEventListener("pointerup",end);
-  b.removeEventListener("pointercancel",end);
-  if(moved){
-   b.dataset.dragged="yes";
-   selectedId=p.id;
-   renderPlayers();renderPlayerCard();
-   notify("Posición actualizada: "+p.name);
-  }
- }
- b.addEventListener("pointermove",move);
- b.addEventListener("pointerup",end);
- b.addEventListener("pointercancel",end);
+function drawPasses(){
+ const g=$('passPaths');g.innerHTML='';
+ passes.forEach((pa,i)=>{
+ const a=players.find(p=>p.id===pa.from),b=players.find(p=>p.id===pa.to);if(!a||!b)return;
+ const path=document.createElementNS('http://www.w3.org/2000/svg','path');
+ path.setAttribute('d',`M ${a.x} ${a.y} Q ${(a.x+b.x)/2-2} ${(a.y+b.y)/2} ${b.x} ${b.y}`);
+ path.setAttribute('fill','none');path.setAttribute('stroke',pa.side===0?'#eaffd2':'#c3e9ff');
+ path.setAttribute('stroke-width','0.45');path.setAttribute('stroke-dasharray',i===passes.length-1?'1.5 0':'1.2 1');
+ path.setAttribute('marker-end','url(#arrow)');g.appendChild(path);
+ });
 }
-
-function renderPlayerCard(){
- const p=players.find(x=>x.id===selectedId);
- if(!p){
-  $("playerCard").innerHTML='<div class="panel-head"><div><h2>Ficha del jugador</h2><p>Perfil y rendimiento individual.</p></div></div><div class="empty">👕<br><br>Selecciona un jugador del campo para consultar sus estadísticas.</div>';
-  return;
- }
- const precision=p.passes?Math.round(p.accurate/p.passes*100):0;
- $("playerCard").innerHTML=`
-  <div class="panel-head"><div><h2>Ficha del jugador</h2><p>Perfil y rendimiento individual.</p></div><span class="pill">#${p.num}</span></div>
-  <div class="player-top">
-   <div class="avatar">${p.num}</div>
-   <div><h2>${escapeHtml(p.name)}</h2><div class="muted small">${p.team===0?"Real Madrid":"FC Barcelona"}</div><div class="pill" style="display:inline-block;margin-top:6px">${p.pos}</div></div>
-   <div class="rating"><strong>${p.rating.toFixed(1)}</strong><span>VALORACIÓN</span></div>
-  </div>
-  <div class="player-stats">
-   <div class="pstat"><span>Minutos</span><strong>${p.min}</strong></div>
-   <div class="pstat"><span>Goles</span><strong>${p.g}</strong></div>
-   <div class="pstat"><span>Asistencias</span><strong>${p.a}</strong></div>
-   <div class="pstat"><span>Pases acertados</span><strong>${p.accurate}/${p.passes}</strong></div>
-   <div class="pstat"><span>Precisión de pase</span><strong>${precision}%</strong></div>
-   <div class="pstat"><span>Faltas cometidas</span><strong>${p.fouls}</strong></div>
-   <div class="pstat"><span>Tarjetas amarillas</span><strong>${p.yellow}</strong></div>
-   <div class="pstat"><span>Tarjetas rojas</span><strong>${p.red}</strong></div>
-  </div>
-  <p class="muted small" style="margin-top:12px">Datos ilustrativos del jugador seleccionado.</p>`;
+function choosePassPlayer(id){
+ if(!passMode)return;
+ if(passStep===0){passSource=id;passStep=1;selected=id;$('passStatus').textContent='Pasador: '+players.find(p=>p.id===id).name+'. Ahora selecciona el receptor.';$('pitchHelp').textContent='Ahora haz clic en el jugador que recibirá el pase.';renderPlayers();return}
+ if(passSource===id){$('passStatus').textContent='Elige un jugador distinto como receptor.';return}
+ const a=players.find(p=>p.id===passSource),b=players.find(p=>p.id===id);
+ passes.push({from:a.id,to:b.id,side:a.side});
+ a.stats.passes++;a.stats.actions++;b.stats.actions++;
+ const d=Math.hypot((b.x-a.x)*1.05,(b.y-a.y)*1.05);
+ a.stats.distance+=d;passDistance=d;passCount++;
+ $('passCount').textContent=passCount;$('distance').textContent=Math.round(d)+' m';
+ selected=b.id;lastPoint={x:a.x,y:a.y};passSource=null;passStep=0;passMode=false;
+ $('passBtn').classList.remove('active');$('passStatus').textContent=`Pase completado: ${a.name} → ${b.name}`;
+ $('pitchHelp').textContent='Pase dibujado. Puedes seguir creando pases o mover jugadores.';
+ $('ball').style.transition='none';$('ball').style.left=a.x+'%';$('ball').style.top=a.y+'%';$('ball').offsetHeight;
+ $('ball').style.transition='left .75s cubic-bezier(.2,.7,.3,1),top .75s cubic-bezier(.2,.7,.3,1)';
+ requestAnimationFrame(()=>{$('ball').style.left=b.x+'%';$('ball').style.top=b.y+'%'});
+ events[a.side].push({t:formatClock(),txt:`Pase · ${a.name} → ${b.name}`,type:'pass'});
+ renderEvents();renderPlayers();renderDetails();renderRoster();updateHeat();
 }
-
-function escapeHtml(s){
- return String(s).replace(/[&<>"']/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c]));
-}
-
-function renderStats(){
- $("posHome").textContent=stats[0].h+"%";
- $("posAway").textContent=stats[0].a+"%";
- $("shotsHome").textContent=stats[1].h;
- $("shotsAway").textContent=stats[1].a;
- $("compare").innerHTML=stats.map(s=>{
-  const total=Math.max(1,s.h+s.a);
-  const wH=s.h/total*100,wA=s.a/total*100;
-  return `<div class="compare-row">
-   <div class="compare-label"><strong>${s.h}${s.suffix}</strong><span>${escapeHtml(s.name)}</span><strong>${s.a}${s.suffix}</strong></div>
-   <div class="bars"><div class="bar"><div class="fill" style="width:${wH}%"></div></div><div class="bar"><div class="fill away" style="width:${wA}%"></div></div></div>
-  </div>`;
- }).join("");
-}
-
-function eventSymbol(e){
- if(e.type==="goal")return "⚽";
- if(e.type==="yellow")return "🟨";
- if(e.type==="red")return "🟥";
- if(e.type==="sub")return "🔄";
- if(e.type==="shot")return "🎯";
- return "•";
-}
-
+function formatClock(){return Math.floor(elapsed/60)+':'+String(elapsed%60).padStart(2,'0')}
 function renderEvents(){
- [0,1].forEach(team=>{
-  const target=$(team===0?"eventsHome":"eventsAway");
-  const teamEvents=events.filter(e=>e.team===team).slice().reverse();
-  target.innerHTML=teamEvents.length?teamEvents.map(e=>
-   `<div class="event"><span class="event-time">${e.min}'</span><span><span class="event-symbol">${eventSymbol(e)}</span>${escapeHtml(e.text)}</span></div>`
-  ).join():'<div class="event-empty">Todavía no hay eventos.</div>';
+ [0,1].forEach(side=>{
+ const root=$(['homeEvents','awayEvents'][side]);root.innerHTML='';
+ if(!events[side].length){root.innerHTML='<div class="empty">Sin eventos</div>';return}
+ events[side].slice().reverse().forEach(ev=>{
+ const el=document.createElement('div');el.className='event-row';
+ el.innerHTML=`<span style="color:${ev.type==='goal'?'var(--green)':'var(--muted)'};font-weight:800">${ev.t}</span><br>${ev.txt}`;
+ root.appendChild(el);
  });
- $("eventCount").textContent=events.length;
- $("yellowCount").textContent=players.reduce((n,p)=>n+p.yellow,0);
- $("redCount").textContent=players.reduce((n,p)=>n+p.red,0);
-}
-
-function renderAnalysis(){
- const home=players.filter(p=>p.team===0),away=players.filter(p=>p.team===1);
- const avgH=home.reduce((n,p)=>n+p.rating,0)/home.length;
- const avgA=away.reduce((n,p)=>n+p.rating,0)/away.length;
- $("analysis").innerHTML=`
-  <p><strong>Real Madrid · ${formationLabel(formation)}</strong><br>La estructura busca amplitud por bandas y apoyo desde el centro del campo. Prueba a mover los extremos hacia el interior para crear nuevas líneas de pase.</p>
-  <p style="margin-top:12px"><strong>FC Barcelona · 4-3-3</strong><br>El esquema visitante prioriza apoyos cortos y progresión por los costados. Puedes mover sus jugadores para experimentar con la presión.</p>
-  <p style="margin-top:12px"><strong>Valoración media de la plantilla</strong><br>Local: ${avgH.toFixed(1)} · Visitante: ${avgA.toFixed(1)}.</p>
-  <p class="muted small" style="margin-top:12px">Recomendaciones orientativas basadas en datos de ejemplo; no son análisis de un encuentro real.</p>`;
-}
-
-function formationLabel(f){
- return f==="442"?"4-4-2":f==="4231"?"4-2-3-1":"4-3-3";
-}
-
-function renderClock(){
- const min=Math.floor(seconds/60),sec=seconds%60;
- $("clock").textContent=String(min).padStart(2,"0")+":"+String(sec).padStart(2,"0")+" · "+(min>=90?"FINAL":"2.ª PARTE");
- $("scoreHome").textContent=scoreH;
- $("scoreAway").textContent=scoreA;
-}
-
-function renderArrows(){
- const svg=$("tacticalSvg");
- svg.innerHTML=`<defs><marker id="arrowHead" markerWidth="4" markerHeight="4" refX="3" refY="2" orient="auto"><path d="M0,0 L4,2 L0,4 Z" fill="#d5ffad"/></marker></defs>`;
- arrows.forEach(a=>{
-  const line=document.createElementNS("http://www.w3.org/2000/svg","line");
-  line.setAttribute("x1",a.x1);line.setAttribute("y1",a.y1);
-  line.setAttribute("x2",a.x2);line.setAttribute("y2",a.y2);
-  line.setAttribute("stroke","#d5ffad");line.setAttribute("stroke-width","0.65");
-  line.setAttribute("stroke-dasharray","1.5 1");line.setAttribute("marker-end","url(#arrowHead)");
-  svg.appendChild(line);
  });
 }
-
-function renderAll(){
- renderClock();renderPlayers();renderPlayerCard();renderStats();
- renderEvents();renderAnalysis();renderArrows();
- $("formLabel").textContent=formationLabel(formation);
+function applyFormation(side){
+ const formation=$($(side===0?'homeFormation':'awayFormation')).value;
+ const team=players.filter(p=>p.side===side);
+ team.forEach((p,i)=>{const [x,y]=shapes[formation][i];p.x=x;p.y=side===0?y:100-y;p.heat.push({x:p.x,y:p.y})});
+ renderPlayers();renderDetails();renderRoster();
 }
-
-function pitchClick(x,y){
- if(!drawMode)return;
- if(!drawStart){
-  drawStart={x,y};notify("Ahora selecciona el destino del pase.");return;
+function setPassMode(){
+ passMode=!passMode;passStep=0;passSource=null;
+ $('passBtn').classList.toggle('active',passMode);
+ $('passStatus').textContent=passMode?'Modo pase: selecciona primero al pasador y después al receptor.':'Modo pase desactivado.';
+ $('pitchHelp').textContent=passMode?'Selecciona al jugador que da el pase y luego al receptor.':'Selecciona un jugador. Arrástralo para cambiar su posición.';
+ renderPlayers();
+}
+function moveBall(from,to){
+ const a=players.find(p=>p.id===from),b=players.find(p=>p.id===to);if(!a||!b)return;
+ const ball=$('ball');ball.style.transition='none';ball.style.left=a.x+'%';ball.style.top=a.y+'%';ball.offsetHeight;
+ ball.style.transition='left .75s ease,top .75s ease';
+ requestAnimationFrame(()=>{ball.style.left=b.x+'%';ball.style.top=b.y+'%'});
+}
+const pitch=$('pitch');
+function pointerMove(e){
+ if(dragging===null)return;
+ const r=pitch.getBoundingClientRect(),p=players.find(p=>p.id===dragging);if(!p)return;
+ const x=Math.max(2,Math.min(98,(e.clientX-r.left)/r.width*100));
+ const y=Math.max(2,Math.min(98,(e.clientY-r.top)/r.height*100));
+ if(Math.abs(x-p.x)+Math.abs(y-p.y)>.5)dragMoved=true;
+ p.x=x;p.y=y;
+ const el=$('playersLayer').querySelectorAll('.player')[players.indexOf(p)];
+ if(el){el.style.left=x+'%';el.style.top=y+'%'}
+ p.heat.push({x,y});if(p.heat.length>180)p.heat.shift();
+ updateHeat();drawPasses();renderDetails();
+}
+document.addEventListener('pointermove',pointerMove);
+document.addEventListener('pointerup',()=>{
+ if(dragging!==null){
+ const p=players.find(p=>p.id===dragging);if(p){p.heat.push({x:p.x,y:p.y});renderDetails();updateHeat();drawPasses()}
+ dragging=null;setTimeout(()=>{dragMoved=false},40);
  }
- arrows.push({x1:drawStart.x,y1:drawStart.y,x2:x,y2:y});
- drawStart=null;renderArrows();notify("Flecha táctica añadida.");
-}
-
-$("pitch").addEventListener("click",e=>{
- if(!drawMode)return;
- if(e.target.closest(".player"))return;
- const r=$("pitch").getBoundingClientRect();
- pitchClick((e.clientX-r.left)/r.width*100,(e.clientY-r.top)/r.height*100);
 });
-
-function toggleDraw(){
- drawMode=!drawMode;drawStart=null;
- $("drawBtn").classList.toggle("active",drawMode);
- $("pitch").classList.toggle("draw-mode",drawMode);
- $("pitchHint").textContent=drawMode?
- "Modo pase activo: toca un punto de salida y después el punto de destino.":
- "Consejo: arrastra un jugador. Activa «Dibujar pase» y toca dos puntos del campo para crear una flecha.";
- notify(drawMode?"Modo dibujo activado":"Modo dibujo desactivado");
-}
-
-function moveBall(){
- ballPos={x:12+Math.random()*76,y:12+Math.random()*76};
- $("ball").style.left=ballPos.x+"%";
- $("ball").style.top=ballPos.y+"%";
-}
-
-function changeFormation(){
- const next=formation==="433"?"442":formation==="442"?"4231":"433";
- $("formation").value=next;
- applyFormation(next);
-}
-
-function applyFormation(f){
- formation=f;
- const layouts={
-  "433":[[50,7],[17,17],[39,14],[61,14],[83,17],[28,30],[50,28],[72,30],[21,43],[79,43],[50,43]],
-  "442":[[50,7],[17,17],[39,14],[61,14],[83,17],[17,30],[39,30],[61,30],[83,30],[38,43],[62,43]],
-  "4231":[[50,7],[17,17],[39,14],[61,14],[83,17],[38,27],[62,27],[20,37],[50,35],[80,37],[50,44]]
- };
- const layout=layouts[f];
- players.filter(p=>p.team===0).forEach((p,i)=>{p.x=layout[i][0];p.y=layout[i][1];});
- renderAll();notify("Formación local cambiada a "+formationLabel(f));
-}
-
-function addEvent(){
- const team=Math.random()<.5?0:1;
- const candidates=players.filter(p=>p.team===team);
- const p=candidates[Math.floor(Math.random()*candidates.length)];
- const types=["goal","yellow","shot","sub"];
- let type=types[Math.floor(Math.random()*types.length)];
- const minute=Math.min(90,Math.max(1,Math.floor(seconds/60)+1));
- if(type==="goal"){
-  if(team===0)scoreH++;else scoreA++;
-  p.g++;p.rating=Math.min(10,p.rating+.2);
-  events.push({min:minute,team,type,text:"Gol de "+p.name});
-  stats[1+(0)].h += team===0?1:0;
-  stats[1].a += team===1?1:0;
-  stats[2].h += team===0?1:0;
-  stats[2].a += team===1?1:0;
- }else if(type==="yellow"){
-  p.yellow++;
-  events.push({min:minute,team,type,text:"Tarjeta amarilla para "+p.name});
- }else if(type==="shot"){
-  events.push({min:minute,team,type,text:"Ocasión de "+p.name});
-  if(team===0)stats[1].h++;else stats[1].a++;
- }else{
-  events.push({min:minute,team,type,text:"Sustitución simulada en el equipo"});
- }
- if(stats[0].h+stats[0].a===100){
-  stats[0].h+=team===0?1:-1;stats[0].a=100-stats[0].h;
- }
- renderAll();notify("Nuevo evento registrado");
-}
-
-function toggleClock(){
- if(clockRunning){
-  clearInterval(timer);timer=null;clockRunning=false;
-  $("pauseBtn").textContent="▶ Iniciar reloj";
- }else{
-  if(seconds>=90*60){notify("El tiempo de demostración ha terminado. Reinicia el partido.");return;}
-  clockRunning=true;$("pauseBtn").textContent="Ⅱ Pausar reloj";
-  timer=setInterval(()=>{
-   if(seconds<90*60){seconds++;renderClock();}
-   else{clearInterval(timer);timer=null;clockRunning=false;$("pauseBtn").textContent="▶ Iniciar reloj";}
-  },1000);
- }
-}
-
-$("drawBtn").addEventListener("click",toggleDraw);
-$("moveBallBtn").addEventListener("click",moveBall);
-$("formationBtn").addEventListener("click",changeFormation);
-$("clearBtn").addEventListener("click",()=>{arrows=[];renderArrows();notify("Flechas eliminadas");});
-$("eventBtn").addEventListener("click",addEvent);
-$("pauseBtn").addEventListener("click",toggleClock);
-$("resetBtn").addEventListener("click",resetGame);
-$("formation").addEventListener("change",e=>applyFormation(e.target.value));
-
-resetGame();
+$('homeFormation').onchange=()=>applyFormation(0);
+$('awayFormation').onchange=()=>applyFormation(1);
+$('heatBtn').onclick=()=>{heatOn=!heatOn;$('heatBtn').classList.toggle('active',heatOn);updateHeat()};
+$('passBtn').onclick=setPassMode;
+$('passFromBtn').onclick=()=>{passMode=true;passStep=0;passSource=null;$('passBtn').classList.add('active');$('passStatus').textContent='Selecciona el pasador en el campo.'};
+$('passToBtn').onclick=()=>{if(passSource===null){$('passStatus').textContent='Primero activa Crear pase y elige un pasador.';return}passMode=true;passStep=1;$('passStatus').textContent='Selecciona el receptor.'};
+$('clearPassBtn').onclick=()=>{passes=[];passCount=0;$('passCount').textContent='0';$('distance').textContent='—';drawPasses();$('passStatus').textContent='Se han borrado los pases dibujados.'};
+$('playBtn').onclick=()=>{
+ if(clockInterval){clearInterval(clockInterval);clockInterval=null;$('playBtn').textContent='▶ Continuar reloj';return}
+ clockInterval=setInterval(()=>{elapsed++;$('clock').textContent=String(Math.floor(elapsed/60)).padStart(2,'0')+':'+String(elapsed%60).padStart(2,'0')},1000);
+ $('playBtn').textContent='Ⅱ Pausar reloj';
+};
+$('eventBtn').onclick=()=>{
+ const p=players[Math.floor(Math.random()*players.length)];
+ const possibilities=[`Pase progresivo · ${p.name}`,`Recuperación · ${p.name}`,`Disparo · ${p.name}`];
+ const txt=possibilities[Math.floor(Math.random()*possibilities.length)];
+ if(txt.startsWith('Disparo')){p.stats.shots++;shots++;$('shots').textContent=shots}
+ p.stats.actions++;events[p.side].push({t:formatClock(),txt,type:'event'});
+ renderEvents();renderDetails();
+};
+$('goalBtn').onclick=()=>{
+ const side=selected!==null?players.find(p=>p.id===selected).side:0;
+ score[side]++;$('score').textContent=score[0]+' — '+score[1];
+ const p=players.find(p=>p.side===side&&p.role==='DEL');
+ events[side].push({t:formatClock(),txt:'⚽ Gol · '+p.name,type:'goal'});
+ renderEvents();
+};
+$('resetBtn').onclick=()=>{
+ if(clockInterval)clearInterval(clockInterval);clockInterval=null;elapsed=0;score=[2,1];shots=8;passCount=0;passDistance=0;passes=[];selected=null;heatSelected.clear();passMode=false;passSource=null;passStep=0;
+ $('clock').textContent='00:00';$('score').textContent='2 — 1';$('shots').textContent='8';$('passCount').textContent='0';$('distance').textContent='—';$('playBtn').textContent='▶ Iniciar reloj';$('passBtn').classList.remove('active');
+ events=[[{t:'12′',txt:'Gol · Mbappé',type:'goal'},{t:'34′',txt:'Gol · Vinícius',type:'goal'}],[{t:'28′',txt:'Gol · Lewandowski',type:'goal'}]];
+ makePlayers();renderRoster();renderPlayers();renderDetails();renderEvents();
+};
+window.addEventListener('resize',updateHeat);
+makePlayers();renderRoster();renderPlayers();renderDetails();renderEvents();
+})();
 </script>
 </body>
 </html>
