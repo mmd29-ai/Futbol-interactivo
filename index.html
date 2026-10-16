@@ -1,0 +1,406 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Football Lab | Análisis táctico</title>
+<style>
+:root{color-scheme:dark;--bg:#0b1220;--panel:#121e30;--line:#293950;--text:#edf4ff;--muted:#9aacc3;--blue:#3b82f6;--green:#16834f;--red:#e34d61}
+*{box-sizing:border-box}
+body{margin:0;background:var(--bg);color:var(--text);font:14px system-ui,sans-serif}
+button,select,input{font:inherit;color:inherit;background:#1c2b41;border:1px solid var(--line);border-radius:8px;padding:9px}
+button{cursor:pointer;font-weight:650}button:hover{filter:brightness(1.2)}
+button.primary{background:#1d4ed8}button.active{outline:2px solid #60a5fa}
+.app{max-width:1450px;margin:auto;padding:20px}
+header{display:flex;justify-content:space-between;align-items:center;gap:15px;margin-bottom:20px}
+h1{font-size:24px;margin:0}h2{font-size:16px;margin:0 0 14px}h3{font-size:14px;margin:0}
+.muted{color:var(--muted)}.small{font-size:12px}
+.tabs,.actions,.buttons{display:flex;gap:8px;flex-wrap:wrap;margin:12px 0}
+.panel{background:var(--panel);border:1px solid var(--line);border-radius:14px;padding:16px;min-width:0}
+.layout{display:grid;grid-template-columns:minmax(0,1.6fr) minmax(290px,.8fr);gap:15px}
+.controls{display:grid;grid-template-columns:1fr 1fr 1fr;gap:10px;margin-bottom:12px}
+label{display:grid;gap:5px;color:var(--muted);font-size:12px}
+select,input{width:100%;min-width:0;background:#0c1728}
+.scoreboard{display:grid;grid-template-columns:1fr auto 1fr;align-items:center;gap:10px;padding:15px;background:#0b1626;border:1px solid var(--line);border-radius:10px}
+.team{font-weight:750;overflow-wrap:anywhere}.team:last-child{text-align:right}
+.score{font-size:29px;font-weight:850;white-space:nowrap}
+.clock{text-align:center;color:#fbbf24;font-size:18px;font-weight:800;margin:12px}
+.clock small{display:block;color:var(--muted);font-size:11px;font-weight:400}
+.pitch{position:relative;aspect-ratio:1.62;overflow:hidden;border:2px solid #bde7cb;border-radius:5px;background:repeating-linear-gradient(90deg,#18764b 0,#18764b 10%,#1d8052 10%,#1d8052 20%);touch-action:none}
+.pitch svg{position:absolute;inset:0;width:100%;height:100%;pointer-events:none}
+.player{position:absolute;transform:translate(-50%,-50%);width:33px;height:33px;border-radius:50%;border:2px solid white;color:white;font-weight:800;font-size:11px;padding:0;z-index:3;touch-action:none;box-shadow:0 2px 7px #0008}
+.player.home{background:#2563eb}.player.away{background:#dc3545}
+.player.selected{outline:3px solid #fde047;outline-offset:2px}
+.player small{position:absolute;top:34px;left:50%;transform:translateX(-50%);font-size:10px;white-space:nowrap;text-shadow:0 1px 3px black;max-width:95px;overflow:hidden}
+.ball{position:absolute;left:50%;top:50%;width:13px;height:13px;border-radius:50%;background:white;border:2px solid black;transform:translate(-50%,-50%);z-index:5;pointer-events:none}
+.notice{padding:10px 12px;border:1px solid #304966;background:#182b43;border-radius:9px;margin:12px 0;font-size:12px}
+.stats{display:grid;grid-template-columns:repeat(3,1fr);gap:8px}
+.stat{padding:10px;background:#0c1728;border:1px solid var(--line);border-radius:9px}
+.stat strong{display:block;font-size:21px}.stat span{font-size:11px;color:var(--muted)}
+.events{display:grid;gap:7px;max-height:350px;overflow:auto}
+.event{display:flex;gap:10px;padding:9px;background:#0c1728;border:1px solid var(--line);border-radius:8px}
+.event time{color:#fbbf24;min-width:38px;font-variant-numeric:tabular-nums}
+.event span{overflow-wrap:anywhere}
+.eventgrid{display:grid;grid-template-columns:repeat(3,1fr);gap:7px}
+.eventgrid button{font-size:12px;padding:9px 4px}
+.playerlist{max-height:250px;overflow:auto;display:grid;gap:5px}
+.playerrow{display:flex;align-items:center;gap:8px;padding:8px;border:1px solid var(--line);border-radius:8px;background:#0c1728}
+.playerrow input{width:auto}.playerrow span{flex:1}
+.tablewrap{overflow:auto}table{border-collapse:collapse;width:100%;font-size:12px}
+th,td{text-align:left;padding:10px;border-bottom:1px solid var(--line);white-space:nowrap}
+th{color:var(--muted)}tr:hover{background:#1a2a40}
+a{color:#93c5fd}.hidden{display:none!important}
+.heatpoint{position:absolute;width:90px;height:90px;transform:translate(-50%,-50%);border-radius:50%;background:radial-gradient(circle,#ff392d77,#ffcc3350 35%,transparent 72%);z-index:1;pointer-events:none}
+footer{padding:20px 0;color:var(--muted);font-size:11px}
+@media(max-width:900px){.layout{grid-template-columns:1fr}.app{padding:12px}}
+@media(max-width:520px){.controls{grid-template-columns:1fr}.eventgrid{grid-template-columns:repeat(2,1fr)}.score{font-size:22px}.team{font-size:12px}.player{width:28px;height:28px}.player small{top:29px;font-size:9px}}
+</style>
+</head>
+<body>
+<div class="app">
+<header>
+ <div><div class="small" style="color:#60a5fa;letter-spacing:2px">MATCH INTELLIGENCE</div><h1>⚽ Football Lab</h1><div class="muted small">Pizarra táctica · Análisis histórico · Simulación</div></div>
+ <div id="connection" class="muted small">Conectando datos…</div>
+</header>
+
+<nav class="tabs">
+ <button class="primary" data-tab="live">Simulador</button>
+ <button data-tab="history">Histórico 2026/27</button>
+ <button data-tab="sources">Fuentes</button>
+</nav>
+
+<section id="live">
+<div class="layout">
+<main class="panel">
+<h2>Partido y alineación</h2>
+<div class="controls">
+<label>Equipo local<select id="home"><option>Cargando…</option></select></label>
+<label>Equipo visitante<select id="away"><option>Cargando…</option></select></label>
+<label>Formación<select id="formation">
+<option>4-3-3</option><option>4-4-2</option><option>4-2-3-1</option><option>3-5-2</option><option>5-3-2</option>
+</select></label>
+</div>
+<div class="scoreboard">
+<div id="homeName" class="team">Local</div>
+<div class="score"><span id="hs">0</span> : <span id="as">0</span></div>
+<div id="awayName" class="team">Visitante</div>
+</div>
+<div class="clock" id="clock">00:00<small>Preparado</small></div>
+
+<div class="pitch" id="pitch">
+<svg viewBox="0 0 1000 620" preserveAspectRatio="none">
+<g fill="none" stroke="#d5f3df" stroke-width="3">
+<rect x="15" y="15" width="970" height="590"/>
+<line x1="500" y1="15" x2="500" y2="605"/>
+<circle cx="500" cy="310" r="85"/><circle cx="500" cy="310" r="4" fill="#d5f3df"/>
+<rect x="15" y="160" width="150" height="300"/><rect x="15" y="235" width="60" height="150"/>
+<rect x="835" y="160" width="150" height="300"/><rect x="925" y="235" width="60" height="150"/>
+</g></svg>
+<svg id="arrows" viewBox="0 0 1000 620" preserveAspectRatio="none"></svg>
+<div id="heatLayer"></div><div class="ball" id="ball"></div><div id="players"></div>
+</div>
+<div class="muted small" style="margin-top:7px">Arrastra los jugadores para moverlos. En modo pase, selecciona emisor y receptor.</div>
+
+<div class="actions">
+<button id="start" class="primary">▶ Iniciar</button><button id="pause">Ⅱ Pausar</button>
+<button id="pass">↗ Modo pase</button><button id="heat">◉ Calor</button>
+<button id="reset">↻ Nuevo partido</button>
+</div>
+<div class="notice" id="message">El partido empieza en 0-0. Los eventos de la simulación se registran manualmente.</div>
+
+<h2 style="margin-top:20px">Registrar evento</h2>
+<div class="eventgrid">
+<button data-kind="goalH">⚽ Gol local</button><button data-kind="goalA">⚽ Gol visitante</button>
+<button data-kind="shot">🎯 Tiro</button><button data-kind="corner">🚩 Córner</button>
+<button data-kind="foul">Falta</button><button data-kind="yellow">🟨 Amarilla</button>
+<button data-kind="red">🟥 Roja</button><button data-kind="save">🧤 Parada</button>
+<button data-kind="offside">Fuera de juego</button><button data-kind="penalty">Penalti</button>
+<button data-kind="injury">Lesión</button><button data-kind="sub">Sustitución</button>
+</div>
+</main>
+
+<aside class="panel">
+<h2>Estadísticas de la simulación</h2>
+<div class="stats">
+<div class="stat"><strong id="passesN">0</strong><span>Pases</span></div>
+<div class="stat"><strong id="shotsN">0</strong><span>Tiros</span></div>
+<div class="stat"><strong id="cornersN">0</strong><span>Córneres</span></div>
+<div class="stat"><strong id="foulsN">0</strong><span>Faltas</span></div>
+<div class="stat"><strong id="yellowN">0</strong><span>Amarillas</span></div>
+<div class="stat"><strong id="redN">0</strong><span>Rojas</span></div>
+</div>
+
+<h2 style="margin-top:20px">Jugadores y mapa de calor</h2>
+<label>Mostrar equipo<select id="side"><option value="all">Ambos equipos</option><option value="home">Local</option><option value="away">Visitante</option></select></label>
+<div class="buttons"><button id="loadSquad">Cargar plantilla desde API</button><button id="clearHeat">Limpiar calor</button></div>
+<label>Token de football-data.org (opcional)<input id="token" type="password" autocomplete="off" placeholder="Pega aquí tu token"></label>
+<div class="playerlist" id="playerList" style="margin-top:10px"></div>
+<div class="muted small" style="margin-top:7px">Sin API, los círculos representan posiciones tácticas, no jugadores reales.</div>
+
+<h2 style="margin-top:20px">Eventos</h2>
+<div class="buttons"><button id="clearEvents">Borrar eventos</button></div>
+<div class="events" id="events"><div class="muted">Sin eventos.</div></div>
+</aside>
+</div>
+</section>
+
+<section id="history" class="hidden">
+<div class="panel">
+<h2>Calendario y resultados · LaLiga 2026/27</h2>
+<div class="controls">
+<label>Buscar equipo<input id="search" placeholder="Nombre del equipo"></label>
+<label>Jornada<select id="round"><option value="">Todas</option></select></label>
+<label>Estado<select id="status"><option value="">Todos</option><option value="FINISHED">Finalizados</option><option value="SCHEDULED">Sin resultado</option></select></label>
+</div>
+<div class="notice">Los datos históricos no inician el reloj ni copian el resultado al simulador. El archivo abierto aporta principalmente calendario y marcadores; no incluye todos los eventos ni mapas de calor.</div>
+<div class="tablewrap"><table><thead><tr><th>Fecha</th><th>Jornada</th><th>Local</th><th>Resultado</th><th>Visitante</th><th>Estado</th><th></th></tr></thead><tbody id="matches"><tr><td colspan="7">Cargando…</td></tr></tbody></table></div>
+</div>
+</section>
+
+<section id="sources" class="hidden">
+<div class="panel">
+<h2>Fuentes de datos</h2>
+<p><b>Calendario y resultados — OpenFootball</b></p>
+<p class="muted">Datos abiertos en JSON, sin clave de API. La cobertura y la actualización dependen del repositorio.</p>
+<a href="https://github.com/openfootball/football.json/tree/master/2026-27" target="_blank" rel="noopener">Abrir temporada 2026/27</a>
+<p style="margin-top:22px"><b>Clubes — LaLiga oficial</b></p>
+<a href="https://www.laliga.com/es-US/laliga-easports/clubes" target="_blank" rel="noopener">Consultar clubes oficiales</a>
+<p style="margin-top:22px"><b>Plantillas — football-data.org</b></p>
+<p class="muted">Requiere token. El acceso a equipos y plantillas depende de los permisos de la cuenta. No se almacenará el token.</p>
+<a href="https://www.football-data.org/documentation/api" target="_blank" rel="noopener">Documentación de la API</a>
+<div id="sourceLog" class="notice">Esperando la carga de datos…</div>
+</div>
+</section>
+
+<footer>Football Lab · La información de partidos procede de fuentes externas. La simulación y sus eventos son manuales; no constituyen un seguimiento en directo.</footer>
+</div>
+
+<script>
+"use strict";
+(() => {
+const DATA_URL="https://raw.githubusercontent.com/openfootball/football.json/master/2026-27/es.1.json";
+const API="https://api.football-data.org/v4";
+const $=id=>document.getElementById(id);
+const S={
+ matches:[],teams:[],players:[],events:[],passes:[],clock:0,running:false,started:false,ended:false,timer:null,
+ homeGoals:0,awayGoals:0,selected:null,passMode:false,passFrom:null,heatOn:false,heatSelected:new Set()
+};
+const formations={
+"4-3-3":[[8,50],[23,22],[25,40],[25,60],[23,78],[43,31],[46,50],[43,69],[70,22],[76,50],[70,78]],
+"4-4-2":[[8,50],[23,22],[25,40],[25,60],[23,78],[45,22],[46,40],[46,60],[45,78],[73,38],[73,62]],
+"4-2-3-1":[[8,50],[23,22],[25,40],[25,60],[23,78],[39,40],[39,60],[57,22],[59,50],[57,78],[76,50]],
+"3-5-2":[[8,50],[24,30],[24,50],[24,70],[47,15],[43,33],[46,50],[43,67],[47,85],[72,40],[72,60]],
+"5-3-2":[[8,50],[22,15],[23,32],[23,50],[23,68],[22,85],[45,30],[47,50],[45,70],[72,40],[72,60]]
+};
+const roles=["POR","LD","DFC","DFC","LI","MC","MC","MC","ED","DC","EI"];
+const esc=s=>String(s??"").replace(/[&<>"']/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c]));
+function say(s){$("message").textContent=s}
+function sourceLog(s){$("sourceLog").textContent=s}
+function score(m){
+ const ft=m.score?.ft;
+ if(Array.isArray(ft))return {h:ft[0],a:ft[1]};
+ if(Array.isArray(m.score)&&m.score.length>=2)return {h:m.score[0],a:m.score[1]};
+ return null;
+}
+function getStatus(m){return score(m)?"FINISHED":"SCHEDULED"}
+async function loadData(){
+ $("connection").textContent="Cargando datos abiertos…";
+ try{
+  const r=await fetch(DATA_URL,{cache:"no-cache"});
+  if(!r.ok)throw Error("HTTP "+r.status);
+  const data=await r.json();
+  S.matches=(data.matches||[]).map((m,i)=>({id:i,round:m.round||"Sin jornada",date:m.date||"",time:m.time||"",home:m.team1,away:m.team2,score:score(m)}));
+  S.teams=[...new Set(S.matches.flatMap(m=>[m.home,m.away]).filter(Boolean))].sort((a,b)=>a.localeCompare(b,"es"));
+  if(!S.teams.length)throw Error("No se encontraron equipos en el JSON.");
+  const options=S.teams.map(t=>`<option value="${esc(t)}">${esc(t)}</option>`).join("");
+  $("home").innerHTML=options;$("away").innerHTML=options;
+  $("home").value=S.teams.find(t=>/Real Madrid/i.test(t))||S.teams[0];
+  $("away").value=S.teams.find(t=>/Barcelona/i.test(t)&&t!==$("home").value)||S.teams.find(t=>t!==$("home").value);
+  const rounds=[...new Set(S.matches.map(m=>m.round))].sort((a,b)=>Number(a.match(/\d+/)?.[0]||0)-Number(b.match(/\d+/)?.[0]||0));
+  $("round").innerHTML='<option value="">Todas</option>'+rounds.map(r=>`<option>${esc(r)}</option>`).join("");
+  buildPlayers();updateNames();renderMatches();
+  $("connection").textContent=`Datos cargados · ${S.teams.length} equipos`;
+  sourceLog(`Carga correcta: ${S.matches.length} partidos de la temporada 2026/27.`);
+ }catch(e){
+  $("connection").textContent="No se pudo conectar";
+  $("home").innerHTML='<option value="">Datos no disponibles</option>';
+  $("away").innerHTML='<option value="">Datos no disponibles</option>';
+  $("matches").innerHTML='<tr><td colspan="7">No se pudo cargar el archivo. Comprueba la conexión y recarga la página.</td></tr>';
+  sourceLog("Error al cargar OpenFootball: "+e.message);
+  say("No se han cargado equipos porque la fuente no respondió. Prueba a recargar; no se inventarán datos.");
+ }
+}
+function updateNames(){$("homeName").textContent=$("home").value||"Local";$("awayName").textContent=$("away").value||"Visitante"}
+function buildPlayers(realHome=null,realAway=null){
+ const pos=formations[$("formation").value]||formations["4-3-3"];S.players=[];
+ ["home","away"].forEach((side,si)=>{
+  const squad=(si===0?realHome:realAway)||[];
+  for(let i=0;i<11;i++){
+   const p=pos[i];S.players.push({
+    id:side+"-"+i,side,number:squad[i]?.shirtNumber||(i===0?1:i+1),
+    name:squad[i]?.name||roles[i],real:!!squad[i],
+    x:si===0?p[0]:100-p[0],y:p[1],heat:[]
+   });
+  }
+ });
+ S.heatSelected.clear();renderPitch();renderPlayerList();
+}
+function renderPitch(){
+ const layer=$("players");layer.innerHTML="";
+ S.players.forEach(p=>{
+  const b=document.createElement("button");b.className="player "+p.side+(S.selected===p.id?" selected":"");
+  b.dataset.id=p.id;b.style.left=p.x+"%";b.style.top=p.y+"%";b.title=p.name;
+  b.innerHTML=`${esc(p.number)}<small>${esc(p.name)}</small>`;
+  b.addEventListener("pointerdown",e=>{
+   if(e.button!==0)return;
+   S.dragId=p.id;S.dragPointer=e.pointerId;
+   try{b.setPointerCapture(e.pointerId)}catch{}
+  });
+  b.addEventListener("click",e=>{e.stopPropagation();playerClick(p.id)});
+  layer.appendChild(b);
+ });
+ drawArrows();renderPlayerList();renderHeat();
+}
+$("pitch").addEventListener("pointermove",e=>{
+ if(!S.dragId)return;
+ const p=S.players.find(x=>x.id===S.dragId);if(!p)return;
+ const r=$("pitch").getBoundingClientRect();
+ p.x=Math.max(2,Math.min(98,(e.clientX-r.left)/r.width*100));
+ p.y=Math.max(5,Math.min(95,(e.clientY-r.top)/r.height*100));
+ const el=$("players").querySelector(`[data-id="${p.id}"]`);
+ if(el){el.style.left=p.x+"%";el.style.top=p.y+"%"}
+});
+document.addEventListener("pointerup",()=>{if(S.dragId){S.dragId=null;renderPitch()}});
+function playerClick(id){
+ if(S.passMode){
+  if(!S.passFrom){S.passFrom=id;S.selected=id;say("Emisor seleccionado. Ahora selecciona el receptor.");}
+  else if(S.passFrom===id){S.passFrom=null;say("Pase cancelado.");}
+  else{
+   const a=S.players.find(p=>p.id===S.passFrom),b=S.players.find(p=>p.id===id);
+   S.passes.push({from:a.id,to:b.id,fromName:a.name,toName:b.name,time:S.clock});
+   S.events.unshift({time:S.clock,text:`Pase ${a.name} → ${b.name}`,kind:"pass"});
+   S.passFrom=null;animateBall(a,b);updateStats();renderEvents();drawArrows();
+   say(`Pase registrado: ${a.name} → ${b.name}`);
+  }
+ }else{S.selected=id;say(`Seleccionado: ${S.players.find(p=>p.id===id).name}`)}
+ renderPitch();
+}
+function drawArrows(){
+ const svg=$("arrows");svg.innerHTML='<defs><marker id="ah" markerWidth="8" markerHeight="8" refX="6" refY="3" orient="auto"><path d="M0,0 L0,6 L6,3 z" fill="white"/></marker></defs>';
+ S.passes.slice(-35).forEach(pass=>{
+  const a=S.players.find(p=>p.id===pass.from),b=S.players.find(p=>p.id===pass.to);if(!a||!b)return;
+  const line=document.createElementNS("http://www.w3.org/2000/svg","line");
+  [["x1",a.x*10],["y1",a.y*6.2],["x2",b.x*10],["y2",b.y*6.2]].forEach(([k,v])=>line.setAttribute(k,v));
+  line.setAttribute("stroke","white");line.setAttribute("stroke-width","2.5");line.setAttribute("stroke-dasharray","7 5");line.setAttribute("marker-end","url(#ah)");svg.appendChild(line);
+ });
+}
+function animateBall(a,b){
+ const ball=$("ball");ball.style.transition="none";ball.style.left=a.x+"%";ball.style.top=a.y+"%";ball.offsetHeight;
+ ball.style.transition="left .7s ease,top .7s ease";ball.style.left=b.x+"%";ball.style.top=b.y+"%";
+ a.heat.push({x:a.x,y:a.y});b.heat.push({x:b.x,y:b.y});renderHeat();
+}
+function renderHeat(){
+ const layer=$("heatLayer");layer.innerHTML="";if(!S.heatOn)return;
+ S.players.filter(p=>S.heatSelected.has(p.id)).forEach(p=>{
+  (p.heat.length?p.heat:[{x:p.x,y:p.y}]).forEach(pt=>{
+   const d=document.createElement("div");d.className="heatpoint";d.style.left=pt.x+"%";d.style.top=pt.y+"%";layer.appendChild(d);
+  });
+ });
+}
+function renderPlayerList(){
+ const side=$("side").value;
+ $("playerList").innerHTML=S.players.filter(p=>side==="all"||p.side===side).map(p=>
+ `<label class="playerrow"><input type="checkbox" data-player="${p.id}" ${S.heatSelected.has(p.id)?"checked":""}><span>${esc(p.name)}</span><span class="muted small">${p.side==="home"?"Local":"Visitante"} · ${p.number}</span></label>`
+ ).join("");
+ $("playerList").querySelectorAll("[data-player]").forEach(cb=>cb.addEventListener("change",()=>{
+  cb.checked?S.heatSelected.add(cb.dataset.player):S.heatSelected.delete(cb.dataset.player);renderHeat();
+ }));
+}
+function timeString(){return String(Math.floor(S.clock/60)).padStart(2,"0")+":"+String(S.clock%60).padStart(2,"0")}
+function updateClock(){
+ $("clock").innerHTML=timeString()+"<small>"+(S.ended?"Finalizado":S.running?"En juego":S.started?"Pausado":"Preparado")+"</small>";
+}
+function start(){
+ if(!$("home").value||!$("away").value||$("home").value===$("away").value){say("Selecciona dos equipos distintos.");return}
+ if(S.ended)return;S.started=true;S.running=true;
+ if(!S.timer)S.timer=setInterval(()=>{if(S.running&&!S.ended){S.clock++;if(S.clock%10===0&&S.heatOn){S.players.forEach(p=>{if(Math.random()<.15)p.heat.push({x:p.x,y:p.y})});renderHeat()}updateClock()}},1000);
+ updateClock();say("Simulación en marcha. Los eventos se añaden manualmente.");
+}
+function reset(){
+ S.running=false;S.started=false;S.ended=false;S.clock=0;S.homeGoals=0;S.awayGoals=0;
+ S.events=[];S.passes=[];S.selected=null;S.passFrom=null;S.passMode=false;S.heatOn=false;S.heatSelected.clear();
+ $("hs").textContent="0";$("as").textContent="0";$("pass").classList.remove("active");$("heat").classList.remove("active");
+ $("arrows").innerHTML="";$("ball").style.left="50%";$("ball").style.top="50%";
+ buildPlayers();updateClock();renderEvents();updateStats();
+ say("Partido nuevo: 0-0, reloj a cero y sin eventos anteriores.");
+}
+function addEvent(kind){
+ if(!S.started||S.ended){say("Pulsa Iniciar antes de registrar eventos.");return}
+ const labels={goalH:"Gol local",goalA:"Gol visitante",shot:"Tiro",corner:"Córner",foul:"Falta",yellow:"Tarjeta amarilla",red:"Tarjeta roja",save:"Parada",offside:"Fuera de juego",penalty:"Penalti",injury:"Lesión",sub:"Sustitución"};
+ if(kind==="goalH")S.homeGoals++;if(kind==="goalA")S.awayGoals++;
+ $("hs").textContent=S.homeGoals;$("as").textContent=S.awayGoals;
+ const p=S.players.find(x=>x.id===S.selected);
+ S.events.unshift({time:S.clock,text:labels[kind]+(p?" · "+p.name:""),kind});
+ updateStats();renderEvents();say(labels[kind]+" registrado en "+timeString()+".");
+}
+function updateStats(){
+ const count=k=>S.events.filter(e=>e.kind===k).length;
+ $("passesN").textContent=S.passes.length;$("shotsN").textContent=count("shot");$("cornersN").textContent=count("corner");
+ $("foulsN").textContent=count("foul");$("yellowN").textContent=count("yellow");$("redN").textContent=count("red");
+}
+function renderEvents(){
+ $("events").innerHTML=S.events.length?S.events.map(e=>`<div class="event"><time>${String(Math.floor(e.time/60)).padStart(2,"0")}:${String(e.time%60).padStart(2,"0")}</time><span>${esc(e.text)}</span></div>`).join(""):'<div class="muted">Sin eventos.</div>';
+}
+function renderMatches(){
+ const q=$("search").value.trim().toLowerCase(),round=$("round").value,status=$("status").value;
+ const list=S.matches.filter(m=>(!q||(m.home+" "+m.away).toLowerCase().includes(q))&&(!round||m.round===round)&&(!status||(status==="FINISHED"?!!m.score:!m.score)));
+ $("matches").innerHTML=list.map(m=>`<tr><td>${esc(m.date)} ${esc(m.time)}</td><td>${esc(m.round)}</td><td>${esc(m.home)}</td><td><b>${m.score?m.score.h+" - "+m.score.a:"—"}</b></td><td>${esc(m.away)}</td><td>${m.score?"Finalizado":"Sin resultado"}</td><td><button data-use="${m.id}">Cargar</button></td></tr>`).join("")||'<tr><td colspan="7">No hay partidos para esos filtros.</td></tr>';
+ $("matches").querySelectorAll("[data-use]").forEach(b=>b.addEventListener("click",()=>{
+  const m=S.matches.find(x=>x.id===Number(b.dataset.use));if(!m)return;
+  $("home").value=m.home;$("away").value=m.away;updateNames();reset();tab("live");
+  say(`Equipos cargados desde el histórico. Resultado de referencia: ${m.score?m.score.h+"-"+m.score.a:"sin resultado"}. La simulación comienza en 0-0.`);
+ }));
+}
+function tab(name){
+ document.querySelectorAll("[data-tab]").forEach(b=>b.classList.toggle("primary",b.dataset.tab===name));
+ ["live","history","sources"].forEach(id=>$(id).classList.toggle("hidden",id!==name));
+}
+document.querySelectorAll("[data-tab]").forEach(b=>b.addEventListener("click",()=>tab(b.dataset.tab)));
+$("start").addEventListener("click",start);
+$("pause").addEventListener("click",()=>{S.running=false;updateClock()});
+$("reset").addEventListener("click",reset);
+$("pass").addEventListener("click",()=>{S.passMode=!S.passMode;S.passFrom=null;$("pass").classList.toggle("active",S.passMode);say(S.passMode?"Modo pase: selecciona emisor y receptor.":"Modo pase desactivado.")});
+$("heat").addEventListener("click",()=>{S.heatOn=!S.heatOn;$("heat").classList.toggle("active",S.heatOn);renderHeat()});
+$("clearHeat").addEventListener("click",()=>{S.players.forEach(p=>p.heat=[]);renderHeat()});
+$("clearEvents").addEventListener("click",()=>{S.events=[];S.passes=[];S.homeGoals=0;S.awayGoals=0;$("hs").textContent="0";$("as").textContent="0";$("arrows").innerHTML="";updateStats();renderEvents();say("Eventos borrados y marcador restablecido a 0-0.")});
+document.querySelectorAll("[data-kind]").forEach(b=>b.addEventListener("click",()=>addEvent(b.dataset.kind)));
+$("home").addEventListener("change",()=>{updateNames();reset()});
+$("away").addEventListener("change",()=>{updateNames();reset()});
+$("formation").addEventListener("change",()=>buildPlayers());
+$("side").addEventListener("change",renderPlayerList);
+["search","round","status"].forEach(id=>$(id).addEventListener(id==="search"?"input":"change",renderMatches));
+$("loadSquad").addEventListener("click",async()=>{
+ const token=$("token").value.trim();if(!token){say("Para obtener nombres reales, introduce un token válido de football-data.org.");return}
+ try{
+  const response=await fetch(API+"/teams",{headers:{"X-Auth-Token":token}});
+  if(!response.ok)throw Error("La API respondió "+response.status+". Revisa el token y sus permisos.");
+  const data=await response.json(),teams=data.teams||[];
+  function find(name){return teams.find(t=>t.name===name||t.shortName===name||t.name?.includes(name))}
+  const h=find($("home").value),a=find($("away").value);
+  if(!h||!a)throw Error("La API no ha devuelto ambos equipos; comprueba el acceso a LaLiga.");
+  const [rh,ra]=await Promise.all([h,a].map(t=>fetch(API+"/teams/"+t.id,{headers:{"X-Auth-Token":token}})));
+  if(!rh.ok||!ra.ok)throw Error("No se pudieron obtener las plantillas con este plan.");
+  const [dh,da]=await Promise.all([rh.json(),ra.json()]);
+  const homeSquad=(dh.squad||[]).filter(p=>p.position&&p.role!=="COACH");
+  const awaySquad=(da.squad||[]).filter(p=>p.position&&p.role!=="COACH");
+  if(!homeSquad.length||!awaySquad.length)throw Error("La API no ha devuelto ambas plantillas. No se inventarán nombres.");
+  buildPlayers(homeSquad,awaySquad);
+  say("Plantillas obtenidas de football-data.org. Comprueba que los datos correspondan a la temporada actual.");
+ }catch(e){say(e.message)}
+});
+$("pitch").addEventListener("click",e=>{if(e.target===$("pitch")){S.selected=null;renderPitch()}});
+updateClock();renderEvents();updateStats();loadData();
+})();
+</script>
+</body>
+</html>
